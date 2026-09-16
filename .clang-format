@@ -1,0 +1,8 @@
+BasedOnStyle: Microsoft
+IndentWidth: 4
+ColumnLimit: 110
+SortIncludes: Never
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+StatementMacros: [UPROPERTY, UFUNCTION, GENERATED_BODY, UCLASS, USTRUCT, UENUM]

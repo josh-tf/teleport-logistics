@@ -1,0 +1,9 @@
+# Store text with LF; check out PowerShell as CRLF for Windows contributors.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+
+# Binary: no diff, no merge, no line-ending translation.
+*.uasset binary
+*.png binary
+*.psd binary
+*.ttf binary

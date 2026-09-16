@@ -1,0 +1,11 @@
+TeleportLogistics/Binaries/
+TeleportLogistics/Intermediate/
+TeleportLogistics/Saved/
+TeleportLogistics/DerivedDataCache/
+dist/
+reports/icon-debug/
+.DS_Store
+__pycache__/
+.toolchains/
+node_modules/
+.claude/settings.local.json
