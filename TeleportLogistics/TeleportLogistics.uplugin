@@ -1,0 +1,28 @@
+{
+  "FileVersion": 3,
+  "Version": 30,
+  "VersionName": "0.5.10",
+  "SemVersion": "0.5.10",
+  "FriendlyName": "Teleport Logistics",
+  "Description": "Teleport items, fluids and Pioneers through named networks.",
+  "Category": "Logistics",
+  "CanContainContent": true,
+  "EnabledByDefault": true,
+  "IsBetaVersion": true,
+  "GameVersion": ">=502094",
+  "AcceptsAnyRemoteVersion": false,
+  "Modules": [
+    {
+      "Name": "TeleportLogistics",
+      "Type": "Runtime",
+      "LoadingPhase": "PostDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "SML",
+      "Enabled": true,
+      "SemVersion": "^3.12.0"
+    }
+  ]
+}

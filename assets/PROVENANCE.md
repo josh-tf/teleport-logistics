@@ -1,0 +1,7 @@
+TeleportLogistics's housings, portal chambers, pressure vessels, hub console/tower, material layout, and icon pipeline were created for this project by the included generation scripts. The standard belt, pipe, and compact power connector pieces come from the separately attributed Satisfactory Modeling Tools package recommended by the modding documentation.
+
+The source meshes use centimetres and the game's local-positive-X connection convention. Inputs are teal, outputs amber, and the custom geometry is UV packed for the native factory material atlas. The item variants use an open arch; fluid variants use a pressure-vessel silhouette; the hub uses a console/antenna silhouette. Each variant imports as one static mesh with four or five consolidated material sections.
+
+`scripts/import-assets.py` requires the CSS Unreal Editor. It binds the native factory and decal materials, creates TeleportLogistics's power-aware screen material, and imports the cookable model and icon assets. The native building code prefers those assets; pre-import editor startup falls back to engine basic shapes. Geometry, connector retention, icon transparency, and package structure are validated before packaging; final visual acceptance still takes place in game.
+
+Identification plates use the FICSIT silhouette and the game's Open Sans Bold typeface; see the separate attribution and font license in `assets/vendor/FICSIT/` and `assets/vendor/OpenSans/`. The lettering and logo are flush planar marks in the existing factory section.
