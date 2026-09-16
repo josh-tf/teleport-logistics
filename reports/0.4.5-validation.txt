@@ -1,0 +1,19 @@
+Relay 0.4.5 validation
+
+PASS: 7 transport scenarios, including 60,000 randomized conservation steps
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 30 native classes
+PASS: five stock-scale UV model sources, stable consolidated slots, and 139,990 total triangles
+PASS: ten 3D descriptor captures, five transparent map markers, native-style category/milestone art, and one screen texture
+PASS: thirty-four retained Unreal packages; native factory/decal bindings, one stable LOD, and power-aware screen material configured
+PASS: native belt and pipe geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions
+PASS: item housings close both side gaps and rear bulkheads; belt mouths stay open and vent details are seated on their panels
+PASS: all five models select their correct flush-display atlas tiles without edge bleed
+
+PASS: final four-glyph preview and refreshed model captures reviewed.
+PASS: pixel checks centre all eight status dots at x=256, matching the line midpoint and endpoint arrows.
+PASS: offline viewer load, models, camera, surface and responsive-layout checks; final atlas embedded.
+PASS: Unreal display refresh imports 18 icons and the atlas while retaining texture settings.
+PASS: Unreal content inspection validates recipes, icons, model/material bindings and map/power resources.
+PASS: Windows Steam/Epic/client/server Shipping build, cook and stage; BUILD SUCCESSFUL, ExitCode=0, 54 seconds.
+Geometry and runtime code are unchanged from 0.4.4; its four native automation tests were not rerun for this texture-only update. In-game appearance remains a user acceptance check.

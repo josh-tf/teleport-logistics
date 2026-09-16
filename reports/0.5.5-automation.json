@@ -1,0 +1,454 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "remote-dev",
+			"instance": "8067ADF47F964E7B982D01017496E659",
+			"instanceName": "remote-dev-167093",
+			"platform": "LinuxEditor",
+			"oSVersion": "Debian GNU/Linux 13 (trixie) 6.12.105+deb13-amd64",
+			"model": "Default",
+			"gPU": "NVIDIA PCI-id: 10de-13b1 (17aa-2230)",
+			"cPUModel": "Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz",
+			"rAMInGB": 31,
+			"renderMode": "SM5",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.09.14-14.49.58",
+	"succeeded": 7,
+	"succeededWithWarnings": 1,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.84830522537231445,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "CloseLifecycle",
+			"fullTestPath": "Relay.Interaction.CloseLifecycle",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.034303434193134308,
+			"dateTime": "2026.09.14-14.49.57",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "DesignAndSnapshots",
+			"fullTestPath": "Relay.Interaction.DesignAndSnapshots",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.52908378839492798,
+			"dateTime": "2026.09.14-14.49.57",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/-Shared/Widget_StandardButton.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.57"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/Widget_CostSlotWrapper.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/Widget_CostSlotWrapper.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Reply  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Reply  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Reply  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/InventorySlots/Widget_InventorySlot.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/InGame/Tooltip/Widget_TooltipRecipe.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Character/Player/Widget_PlayerInventoryAddon.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/Widget_Window_DarkMode.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/Widget_Window_DarkMode.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Warning",
+						"message": "LogBlueprint: [AssetLog] /home/dev/development/satisfactory/.toolchains/sml-project/Content/FactoryGame/Interface/UI/Widget_Window_DarkMode.uasset: [Compiler] Event Reply  Return Value  should not be empty.  Return a reply such as Handled or Unhandled.",
+						"context": "log",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Imported mast top centroid: X=-83.640 Y=52.500 Z=298.258 (72 vertices)",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.09.14-14.49.58"
+				}
+			],
+			"warnings": 25,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "NativeWidgetLifecycle",
+			"fullTestPath": "Relay.Interaction.NativeWidgetLifecycle",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.010874707251787186,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SaveAndClipboard",
+			"fullTestPath": "Relay.Persistence.SaveAndClipboard",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.0081984791904687881,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "EndpointConnections",
+			"fullTestPath": "Relay.PowerVisual.EndpointConnections",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.033016320317983627,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RejectFactoryWorkerUpdates",
+			"fullTestPath": "Relay.PowerVisual.RejectFactoryWorkerUpdates",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.0090099629014730453,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RewardLifetime",
+			"fullTestPath": "Relay.Research.RewardLifetime",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.21519848704338074,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ContractAndClose",
+			"fullTestPath": "Relay.Travel.ContractAndClose",
+			"state": "Success",
+			"deviceInstance": [
+				"8067ADF47F964E7B982D01017496E659"
+			],
+			"duration": 0.0086200060322880745,
+			"dateTime": "2026.09.14-14.49.58",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

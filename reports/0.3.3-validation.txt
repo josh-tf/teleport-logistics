@@ -1,0 +1,15 @@
+PASS: 7 transport scenarios, including 60,000 randomized conservation steps
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 29 native classes
+PASS: five stock-scale UV model sources, stable consolidated slots, and 107,764 total triangles
+PASS: ten 3D descriptor captures, five transparent map markers, native-style category/milestone art, and one screen texture
+PASS: twenty-five retained Unreal packages; native factory/decal bindings, one stable LOD, and power-aware screen material configured
+PASS: native belt, pipe, and compact-power geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions
+
+Final content and geometry checks after the hub screen seating correction:
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 29 native classes
+PASS: five stock-scale UV model sources, stable consolidated slots, and 107,764 total triangles
+PASS: ten 3D descriptor captures, five transparent map markers, native-style category/milestone art, and one screen texture
+PASS: twenty-five retained Unreal packages; native factory/decal bindings, one stable LOD, and power-aware screen material configured
+PASS: native belt, pipe, and compact-power geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions

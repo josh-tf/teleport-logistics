@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#0d0d0f;font-family:Barlow,system-ui,sans-serif}
+  *{box-sizing:border-box}
+  a{color:#E8963C;text-decoration:none}
+  a:hover{color:#F6BD74;text-decoration:underline}
+  ::selection{background:#E8963C;color:#1a1207}
+  input,button,select,textarea{font-family:Barlow,system-ui,sans-serif}
+  @keyframes teleporterSpin{to{transform:rotate(360deg)}}
+  @keyframes teleporterPulse{0%,100%{opacity:.35}50%{opacity:1}}
+  @keyframes teleporterBar{0%{background-position:0 0}100%{background-position:28px 0}}
+  .rl-scroll::-webkit-scrollbar{width:10px;height:10px}
+  .rl-scroll::-webkit-scrollbar-track{background:#141414}
+  .rl-scroll::-webkit-scrollbar-thumb{background:#4a4a4a;border:1px solid #2a2a2a}
+  .rl-scroll::-webkit-scrollbar-thumb:hover{background:#E8963C}
+</style>
+</helmet>
+
+<div style="display:flex;min-height:100vh;background:#0d0d0f;color:#E8E8E8">
+
+  <!-- ============ HARNESS RAIL (not part of the game UI) ============ -->
+  <div style="width:246px;flex:0 0 246px;background:#16171a;border-right:1px solid #26272b;padding:18px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;align-self:flex-start;height:100vh;overflow:auto" class="rl-scroll">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font:600 15px/20px Barlow;letter-spacing:.02em;color:#EDEDED">Teleport Logistics: native UI</div>
+      <div style="font:500 11px/15px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#7C7F86">Design handoff prototype</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#6E7178">Screens</div>
+      <sc-for list="{{ navScreens }}" as="n" hint-placeholder-count="6">
+        <button type="button" onClick="{{ n.go }}" style="text-align:left;display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid {{ n.bd }};background:{{ n.bg }};color:{{ n.fg }};font:500 13px/17px Barlow;cursor:pointer;border-radius:2px" style-hover="border-color:#E8963C">
+          <span style="width:6px;height:6px;border-radius:50%;background:{{ n.dot }};flex:0 0 6px"></span>
+          <span>{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#6E7178">Reference</div>
+      <sc-for list="{{ navDocs }}" as="n" hint-placeholder-count="3">
+        <button type="button" onClick="{{ n.go }}" style="text-align:left;display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid {{ n.bd }};background:{{ n.bg }};color:{{ n.fg }};font:500 13px/17px Barlow;cursor:pointer;border-radius:2px" style-hover="border-color:#E8963C">
+          <span style="width:6px;height:6px;border-radius:50%;background:{{ n.dot }};flex:0 0 6px"></span>
+          <span>{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;border-top:1px solid #26272b">
+      <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#6E7178">Server response for next Apply</div>
+      <div style="display:flex;gap:6px">
+        <button type="button" onClick="{{ setAccept }}" style="flex:1;padding:6px;border:1px solid {{ acceptBd }};background:{{ acceptBg }};color:#DDD;font:500 12px/16px Barlow;cursor:pointer;border-radius:2px">Accept</button>
+        <button type="button" onClick="{{ setReject }}" style="flex:1;padding:6px;border:1px solid {{ rejectBd }};background:{{ rejectBg }};color:#DDD;font:500 12px/16px Barlow;cursor:pointer;border-radius:2px">Reject</button>
+      </div>
+      <div style="font:400 11px/15px Barlow;color:#6E7178">Rejection path: route reassignment refused while the local buffer still holds contents.</div>
+    </div>
+
+    <div style="margin-top:auto;font:400 11px/16px Barlow;color:#5E6167">
+      HTML/CSS is the specification. Target runtime is UE 5.6.1 Slate/UMG on top of <span style="color:#9A9DA4">Widget_Window_DarkMode</span>.
+    </div>
+  </div>
+
+  <!-- ============ STAGE ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 20px;background:#16171a;border-bottom:1px solid #26272b;flex-wrap:wrap">
+      <div style="font:500 12px/16px Barlow;color:#8A8D94">{{ stageCaption }}</div>
+      <div style="display:flex;align-items:center;gap:10px;font:500 11px/15px 'Barlow Semi Condensed';letter-spacing:.1em;text-transform:uppercase;color:#6E7178">
+        <span>Logical bounds {{ boundsLabel }}</span>
+        <span style="width:1px;height:12px;background:#33353a"></span>
+        <span>Scale {{ scaleLabel }}</span>
+      </div>
+    </div>
+
+    <!-- simulated in-world backdrop -->
+    <div style="flex:1;min-width:0;padding:34px 28px 56px;background:radial-gradient(120% 90% at 18% 0%,#3a3026 0%,#1b1a19 46%,#101011 100%)">
+      <div style="position:relative;max-width:1560px;margin:0 auto">
+
+        <!-- ---------- ENDPOINT WINDOW ---------- -->
+        <sc-if value="{{ isEndpoint }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;background:rgba(22,22,23,.94);border:1px solid rgba(0,0,0,.75);box-shadow:0 26px 70px rgba(0,0,0,.6)">
+
+          <!-- title bar -->
+          <div style="display:flex;align-items:stretch;height:56px;background:linear-gradient(#3e3e3e,#313131);border-bottom:1px solid rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.09)">
+            <div style="display:flex;align-items:center;gap:11px;padding:0 16px;min-width:0;flex:1">
+              <span style="display:flex;flex:0 0 26px" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E9E9E9" stroke-width="1.6"><path d="M3 8.2 12 3.6l9 4.6v7.6L12 20.4 3 15.8V8.2Z"/><path d="M3 8.2 12 12.8l9-4.6M12 12.8v7.6" stroke-width="1.2" opacity=".75"/></svg>
+              </span>
+              <span style="font:500 21px/26px Barlow;color:#F0F0F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ epWindowTitle }}</span>
+              <span style="display:flex;align-items:center;gap:6px;padding:3px 9px;background:{{ dirBadgeBg }};border:1px solid {{ dirBadgeBd }};color:{{ dirBadgeFg }};font:600 12px/15px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;white-space:nowrap">{{ dirBadgeText }}</span>
+            </div>
+            <button type="button" onClick="{{ closeWindow }}" aria-label="Close" title="Close (Esc)" style="width:66px;border:0;border-left:1px solid rgba(0,0,0,.35);background:#4a4a4a;color:#EFEFEF;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#5a5a5a" style-active="background:#E8963C;color:#1a1207" style-focus="outline:2px solid #E8963C;outline-offset:-4px">
+              <svg width="18" height="18" viewBox="0 0 18 18" stroke="currentColor" stroke-width="2.1"><path d="M3 3l12 12M15 3L3 15"/></svg>
+            </button>
+          </div>
+
+          <!-- identity strip -->
+          <div style="display:flex;align-items:center;gap:18px;padding:13px 18px;background:linear-gradient(160deg,#484848,#343434 46%,#2b2b2b);border-bottom:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.11),inset 0 -1px 0 rgba(0,0,0,.45)">
+            <div style="position:absolute;left:8px;margin-top:0;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)"></div>
+            <div style="display:flex;flex-direction:column;gap:2px;padding-left:12px">
+              <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#A7A7A7">Building</div>
+              <div style="font:600 17px/21px 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase;color:#F2F2F2">{{ epBuildingId }}</div>
+            </div>
+            <div style="width:1px;align-self:stretch;background:rgba(0,0,0,.45);box-shadow:1px 0 0 rgba(255,255,255,.06)"></div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#A7A7A7">Medium</div>
+              <div style="font:500 15px/19px Barlow;color:{{ mediumFg }}">{{ mediumLabel }}</div>
+            </div>
+            <div style="width:1px;align-self:stretch;background:rgba(0,0,0,.45);box-shadow:1px 0 0 rgba(255,255,255,.06)"></div>
+            <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:2px;min-width:0">
+              <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#A7A7A7">Assigned to</div>
+              <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                <span style="font:500 15px/19px Barlow;color:#DCDCDC">{{ liveChannel }}</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" stroke="#8A8A8A" stroke-width="1.6" fill="none"><path d="M3 1.5 7.5 6 3 10.5"/></svg>
+                <span style="flex:1 1 auto;min-width:0;font:600 15px/19px Barlow;color:#F2A64A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ liveRoute }}">{{ liveRoute }}</span>
+              </div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <span style="display:flex;align-items:center;gap:7px;padding:5px 11px;background:{{ enabledPillBg }};border:1px solid {{ enabledPillBd }};color:{{ enabledPillFg }};font:600 12px/15px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase">
+                <span style="width:7px;height:7px;border-radius:50%;background:{{ enabledPillFg }}"></span>{{ enabledPillText }}
+              </span>
+              <div style="width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)"></div>
+            </div>
+          </div>
+
+          <!-- body -->
+          <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1px;background:rgba(0,0,0,.5)">
+
+            <!-- LEFT: routing -->
+            <div style="padding:18px;display:flex;flex-direction:column;gap:16px;background:rgba(26,26,27,.6);min-width:0">
+
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <label for="rl-label" style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Endpoint label</label>
+                  <sc-if value="{{ labelDirty }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;font:600 10px/13px 'Barlow Semi Condensed';letter-spacing:.12em;text-transform:uppercase;color:#F2A64A"><span style="width:5px;height:5px;border-radius:50%;background:#F2A64A"></span>Needs apply</span></sc-if>
+                </div>
+                <input id="rl-label" type="text" value="{{ draftLabel }}" onChange="{{ onLabel }}" placeholder="Name this endpoint" style="background:#141414;border:1px solid {{ labelBd }};color:#EDEDED;font:400 16px/22px Barlow;padding:9px 11px;border-radius:2px;min-width:0" style-focus="outline:2px solid #E8963C;outline-offset:-2px;border-color:#E8963C" style-hover="border-color:#6a6a6a">
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Channel</span>
+                  <sc-if value="{{ channelDirty }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;font:600 10px/13px 'Barlow Semi Condensed';letter-spacing:.12em;text-transform:uppercase;color:#F2A64A"><span style="width:5px;height:5px;border-radius:50%;background:#F2A64A"></span>Needs apply</span></sc-if>
+                </div>
+                <div style="display:flex;gap:7px;flex-wrap:wrap">
+                  <sc-for list="{{ channelChips }}" as="c" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:7px;padding:8px 12px;background:{{ c.bg }};border:1px solid {{ c.bd }};color:{{ c.fg }};font:500 15px/19px Barlow;cursor:pointer;border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:-2px">
+                      <span style="width:8px;height:8px;background:{{ c.dot }};transform:rotate(45deg)"></span>{{ c.name }}
+                      <span style="font:500 12px/15px 'Barlow Semi Condensed';color:#8A8A8A">{{ c.meta }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="font:400 12px/17px Barlow;color:#8A8A8A">Default needs no hub. Other channels exist because a hub was placed and named.</div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Route in {{ draftChannel }}</span>
+                  <sc-if value="{{ routeDirty }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;font:600 10px/13px 'Barlow Semi Condensed';letter-spacing:.12em;text-transform:uppercase;color:#F2A64A"><span style="width:5px;height:5px;border-radius:50%;background:#F2A64A"></span>Needs apply</span></sc-if>
+                  <span style="margin-left:auto;font:500 12px/15px 'Barlow Semi Condensed';color:#7C7C7C">{{ routeCountLabel }}</span>
+                </div>
+
+                <div style="position:relative;display:flex;align-items:center">
+                  <input type="text" value="{{ routeQuery }}" onChange="{{ onRouteQuery }}" placeholder="Search routes…" aria-label="Search routes" style="flex:1;background:#141414;border:1px solid #4a4a4a;color:#EDEDED;font:400 15px/20px Barlow;padding:8px 34px 8px 11px;border-radius:2px;min-width:0" style-focus="outline:2px solid #E8963C;outline-offset:-2px;border-color:#E8963C" style-hover="border-color:#6a6a6a">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8A8A8A" stroke-width="1.7" style="position:absolute;right:11px;pointer-events:none"><circle cx="6.8" cy="6.8" r="4.6"/><path d="M10.3 10.3 14 14"/></svg>
+                </div>
+
+                <div class="rl-scroll" style="display:flex;flex-direction:column;gap:2px;max-height:262px;overflow-y:auto;background:#141414;border:1px solid rgba(0,0,0,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);padding:2px">
+                  <sc-for list="{{ visibleRoutes }}" as="r" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ r.pick }}" style="display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;padding:9px 11px;background:{{ r.bg }};border:1px solid {{ r.bd }};cursor:pointer;min-width:0" style-hover="background:#3e3e3e" style-focus="outline:2px solid #E8963C;outline-offset:-2px">
+                      <span style="display:flex;justify-content:center;color:{{ r.mediumFg }}">{{ r.icon }}</span>
+                      <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                        <span style="font:500 16px/21px Barlow;color:{{ r.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.name }}">{{ r.name }}</span>
+                        <span style="font:400 12px/16px Barlow;color:#8A8A8A">{{ r.meta }}</span>
+                      </span>
+                      <span style="display:flex;align-items:center;gap:8px">
+                        <sc-if value="{{ r.paused }}" hint-placeholder-val="{{ false }}"><span style="padding:2px 7px;background:rgba(232,195,60,.14);border:1px solid rgba(232,195,60,.5);color:#E8C33C;font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase">Paused</span></sc-if>
+                        <span style="font:600 15px/19px Barlow;font-variant-numeric:tabular-nums;color:{{ r.tpFg }};white-space:nowrap">{{ r.tp }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                  <sc-if value="{{ noRouteMatch }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px 16px;text-align:center">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5E5E5E" stroke-width="1.5"><circle cx="10" cy="10" r="6.6"/><path d="M14.8 14.8 21 21"/></svg>
+                      <div style="font:500 15px/20px Barlow;color:#9C9C9C">No route matches “{{ routeQuery }}”</div>
+                      <div style="font:400 13px/18px Barlow;color:#7C7C7C;max-width:320px">Clear the filter, or enter the name below to create it when you apply.</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ routesEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px 16px;text-align:center">
+                      <div style="font:500 15px/20px Barlow;color:#9C9C9C">No routes in this channel yet</div>
+                      <div style="font:400 13px/18px Barlow;color:#7C7C7C;max-width:340px">Name one below. The first endpoint to apply a route name creates it.</div>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:7px;padding:12px;background:rgba(40,40,40,.55);border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)">
+                  <label for="rl-newroute" style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Or create a new route</label>
+                  <div style="display:flex;gap:8px;min-width:0">
+                    <input id="rl-newroute" type="text" value="{{ newRoute }}" onChange="{{ onNewRoute }}" placeholder="e.g. mega_copper_ingot" style="flex:1;background:#141414;border:1px solid #4a4a4a;color:#EDEDED;font:400 15px/20px Barlow;padding:8px 11px;border-radius:2px;min-width:0" style-focus="outline:2px solid #E8963C;outline-offset:-2px;border-color:#E8963C" style-hover="border-color:#6a6a6a">
+                    <button type="button" onClick="{{ useNewRoute }}" disabled="{{ newRouteDisabled }}" style="padding:8px 14px;background:{{ newRouteBg }};border:1px solid {{ newRouteBd }};color:{{ newRouteFg }};font:600 14px/20px Barlow;cursor:{{ newRouteCursor }};border-radius:2px;white-space:nowrap" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:-2px">Use name</button>
+                  </div>
+                  <div style="font:400 12px/17px Barlow;color:#8A8A8A">{{ newRouteHint }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: status / buffer -->
+            <div style="padding:18px;display:flex;flex-direction:column;gap:14px;background:rgba(20,20,21,.55);min-width:0">
+
+              <!-- selection summary -->
+              <div style="position:relative;padding:14px 16px;background:linear-gradient(160deg,#3c3226,#2a241c 60%,#232019);border:1px solid rgba(232,150,60,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)">
+                <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#C99A5E;margin-bottom:6px">Will be assigned on apply</div>
+                <div style="display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap">
+                  <span style="font:500 16px/22px Barlow;color:#D6D6D6">{{ draftChannel }}</span>
+                  <span style="font:500 16px/22px Barlow;color:#8A8A8A">/</span>
+                  <span style="font:700 22px/26px Barlow;color:#F6B25C;word-break:break-all">{{ draftRoute }}</span>
+                </div>
+                <div style="font:400 12px/17px Barlow;color:#9C9C9C;margin-top:5px">{{ draftRouteNote }}</div>
+              </div>
+
+              <!-- status -->
+              <div style="display:flex;flex-direction:column;gap:9px;padding:14px 16px;background:rgba(38,38,38,.6);border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="width:9px;height:9px;border-radius:50%;background:{{ statusDot }};box-shadow:0 0 8px {{ statusDot }};animation:{{ statusAnim }}"></span>
+                  <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Network status</span>
+                  <span style="margin-left:auto;font:400 11px/15px Barlow;color:#6E6E6E">snapshot {{ snapshotAge }}</span>
+                </div>
+                <div style="font:400 15px/21px Barlow;color:{{ statusFg }}">{{ statusMessage }}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,0,0,.4);margin-top:2px">
+                  <div style="padding:10px 12px;background:rgba(26,26,26,.75)">
+                    <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">Route throughput</div>
+                    <div style="font:600 24px/30px Barlow;font-variant-numeric:tabular-nums;color:{{ mediumFg }}">{{ throughputValue }}<span style="font:500 14px/18px Barlow;color:#9C9C9C"> {{ throughputUnit }}</span></div>
+                    <div style="font:400 11px/15px Barlow;color:#6E6E6E">aggregate, all endpoints</div>
+                  </div>
+                  <div style="padding:10px 12px;background:rgba(26,26,26,.75)">
+                    <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">Route state</div>
+                    <div style="font:600 24px/30px Barlow;color:{{ routeStateFg }}">{{ routeStateLabel }}</div>
+                    <div style="font:400 11px/15px Barlow;color:#6E6E6E">{{ routeStateNote }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- local buffer -->
+              <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:linear-gradient(160deg,#454545,#333 50%,#2b2b2b);border:1px solid rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.11),inset 0 -1px 0 rgba(0,0,0,.45)">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#B4B4B4">Local buffer</span>
+                  <span style="margin-left:auto;font:600 16px/20px Barlow;font-variant-numeric:tabular-nums;color:{{ mediumFg }}">{{ bufferLabel }}</span>
+                </div>
+                <div style="height:12px;background:#161616;border:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 2px rgba(0,0,0,.7);position:relative;overflow:hidden">
+                  <div style="position:absolute;inset:0 auto 0 0;width:{{ bufferPct }};background:{{ bufferFill }}"></div>
+                </div>
+                <div style="font:400 12px/17px Barlow;color:#A7A7A7">{{ bufferNote }}</div>
+                <sc-if value="{{ isFluid }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:12px;padding-top:10px;border-top:1px solid rgba(0,0,0,.4);box-shadow:0 -1px 0 rgba(255,255,255,.05)">
+                    <button type="button" onClick="{{ openFlush }}" disabled="{{ flushDisabled }}" style="display:flex;align-items:center;gap:9px;padding:10px 16px;background:{{ flushBg }};border:1px solid {{ flushBd }};color:{{ flushFg }};font:600 15px/19px Barlow;letter-spacing:.02em;cursor:{{ flushCursor }};border-radius:2px" style-hover="filter:brightness(1.12)" style-focus="outline:2px solid #E8963C;outline-offset:2px">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 1.6c2.6 3 4.4 5 4.4 7a4.4 4.4 0 0 1-8.8 0c0-2 1.8-4 4.4-7Z"/><path d="M5.4 13.8h5.2" opacity=".6"/></svg>
+                      Flush local buffer
+                    </button>
+                    <div style="font:400 12px/16px Barlow;color:{{ flushNoteFg }};min-width:0">{{ flushNote }}</div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:rgba(18,18,18,.6);border-left:2px solid #4a4a4a">
+                <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#7C7C7C">Applies immediately, no confirmation</div>
+                <div style="font:400 12px/17px Barlow;color:#8A8A8A">Enable/Disable is a live switch in the footer. Label, channel and route are staged edits and require Apply.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- footer / action bar -->
+          <div style="display:flex;align-items:center;gap:16px;padding:13px 18px;background:linear-gradient(#3c3c3c,#2f2f2f);border-top:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);flex-wrap:wrap">
+            <button type="button" onClick="{{ toggleEnabled }}" style="display:flex;align-items:center;gap:11px;padding:7px 13px 7px 8px;background:{{ switchBg }};border:1px solid {{ switchBd }};cursor:pointer;border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:2px">
+              <span style="position:relative;width:46px;height:22px;background:#161616;border:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 2px rgba(0,0,0,.7);display:flex;align-items:center">
+                <span style="position:absolute;top:1px;bottom:1px;left:{{ knobLeft }};width:20px;background:linear-gradient(#DADADA,#9A9A9A);box-shadow:0 1px 2px rgba(0,0,0,.6)"></span>
+              </span>
+              <span style="font:600 14px/18px Barlow;letter-spacing:.03em;color:{{ switchFg }}">{{ switchLabel }}</span>
+            </button>
+
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+              <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:9px;padding:6px 12px;background:rgba(232,150,60,.12);border:1px solid rgba(232,150,60,.5)">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#F2A64A;animation:teleporterPulse 1.6s infinite"></span>
+                  <span style="font:500 14px/18px Barlow;color:#F2A64A">{{ pendingLabel }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ showResult }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;padding:6px 12px;background:{{ resultBg }};border:1px solid {{ resultBd }};min-width:0">
+                  <span style="flex:0 0 auto;color:{{ resultFg }}">{{ resultIcon }}</span>
+                  <span style="font:500 14px/19px Barlow;color:{{ resultFg }};min-width:0">{{ resultText }}</span>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:9px;margin-left:auto">
+              <button type="button" onClick="{{ revert }}" disabled="{{ revertDisabled }}" style="padding:10px 18px;background:{{ revertBg }};border:1px solid {{ revertBd }};color:{{ revertFg }};font:500 15px/19px Barlow;cursor:{{ revertCursor }};border-radius:2px" style-hover="border-color:#8a8a8a" style-focus="outline:2px solid #E8963C;outline-offset:2px">Revert</button>
+              <button type="button" onClick="{{ apply }}" disabled="{{ applyDisabled }}" style="display:flex;align-items:center;gap:9px;padding:10px 26px;background:{{ applyBg }};border:1px solid {{ applyBd }};color:{{ applyFg }};font:600 16px/20px Barlow;letter-spacing:.03em;cursor:{{ applyCursor }};border-radius:2px;box-shadow:{{ applyShadow }}" style-hover="filter:brightness(1.1)" style-active="filter:brightness(.9)" style-focus="outline:2px solid #F6BD74;outline-offset:2px">
+                {{ applySpinner }}{{ applyLabel }}
+              </button>
+            </div>
+          </div>
+
+          <!-- flush confirmation (in-window overlay, not a second game window) -->
+          <sc-if value="{{ confirmFlush }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(8,8,8,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+              <div role="dialog" aria-modal="true" style="width:520px;max-width:100%;background:rgba(26,26,26,.98);border:1px solid rgba(209,75,60,.6);box-shadow:0 20px 50px rgba(0,0,0,.7)">
+                <div style="display:flex;align-items:center;gap:11px;padding:13px 16px;background:linear-gradient(#4a3330,#3a2724);border-bottom:1px solid rgba(0,0,0,.55)">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#E8705E" stroke-width="1.8"><path d="M10 2.6 18.4 17H1.6L10 2.6Z"/><path d="M10 7.6v4.2M10 14.2v.6"/></svg>
+                  <span style="font:600 17px/22px Barlow;color:#F0DAD6">Destroy buffered fluid?</span>
+                </div>
+                <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+                  <div style="font:400 15px/22px Barlow;color:#D6D6D6">FICSIT will void <span style="font-weight:700;color:#F6B25C">{{ bufferQty }}</span> held in this endpoint's local buffer. The fluid is not returned and not delivered.</div>
+                  <div style="display:flex;flex-direction:column;gap:7px;padding:12px;background:rgba(18,18,18,.8);border:1px solid rgba(0,0,0,.5)">
+                    <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#8A8A8A">Scope</div>
+                    <div style="font:400 13px/19px Barlow;color:#B4B4B4">Local buffer of this endpoint only. The attached pipe network is untouched — use an Industrial Fluid Buffer's flush for pipes.</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:9px;justify-content:flex-end;padding-top:2px">
+                    <button type="button" onClick="{{ cancelFlush }}" style="padding:10px 18px;background:linear-gradient(#4a4a4a,#3a3a3a);border:1px solid #5a5a5a;color:#E8E8E8;font:500 15px/19px Barlow;cursor:pointer;border-radius:2px" style-hover="border-color:#8a8a8a" style-focus="outline:2px solid #E8963C;outline-offset:2px">Cancel</button>
+                    <button type="button" onClick="{{ doFlush }}" style="padding:10px 20px;background:linear-gradient(#D2543F,#A93A2A);border:1px solid #E0705B;color:#FFF4F1;font:600 15px/19px Barlow;cursor:pointer;border-radius:2px" style-hover="filter:brightness(1.12)" style-focus="outline:2px solid #F6BD74;outline-offset:2px">Flush {{ bufferQty }}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <!-- ---------- HUB WINDOW ---------- -->
+        <sc-if value="{{ isHub }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;background:rgba(22,22,23,.94);border:1px solid rgba(0,0,0,.75);box-shadow:0 26px 70px rgba(0,0,0,.6)">
+
+          <div style="display:flex;align-items:stretch;height:56px;background:linear-gradient(#3e3e3e,#313131);border-bottom:1px solid rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.09)">
+            <div style="display:flex;align-items:center;gap:11px;padding:0 16px;min-width:0;flex:1">
+              <span style="display:flex;flex:0 0 26px" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E9E9E9" stroke-width="1.6"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v5.9M12 15.1V21M3 12h5.9M15.1 12H21" stroke-width="1.4"/><path d="M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M18.4 5.6l-3.2 3.2M8.8 15.2l-3.2 3.2" stroke-width="1.1" opacity=".7"/></svg>
+              </span>
+              <span style="font:500 21px/26px Barlow;color:#F0F0F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Teleporter Hub</span>
+              <span style="font:500 21px/26px Barlow;color:#7C7C7C">·</span>
+              <span style="font:600 21px/26px Barlow;color:#F2A64A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ hubName }}">{{ hubName }}</span>
+              <span style="display:flex;align-items:center;gap:7px;padding:3px 10px;background:{{ powerPillBg }};border:1px solid {{ powerPillBd }};color:{{ powerPillFg }};font:600 12px/15px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;white-space:nowrap">
+                <span style="width:7px;height:7px;border-radius:50%;background:{{ powerPillFg }}"></span>{{ powerPillText }}
+              </span>
+            </div>
+            <button type="button" onClick="{{ closeWindow }}" aria-label="Close" title="Close (Esc)" style="width:66px;border:0;border-left:1px solid rgba(0,0,0,.35);background:#4a4a4a;color:#EFEFEF;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#5a5a5a" style-active="background:#E8963C;color:#1a1207" style-focus="outline:2px solid #E8963C;outline-offset:-4px">
+              <svg width="18" height="18" viewBox="0 0 18 18" stroke="currentColor" stroke-width="2.1"><path d="M3 3l12 12M15 3L3 15"/></svg>
+            </button>
+          </div>
+
+          <sc-if value="{{ unpowered }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 18px;background:linear-gradient(#4a4232,#3a3427);border-bottom:1px solid rgba(0,0,0,.5)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8C33C" stroke-width="1.8"><path d="M13 2.6 5.4 13.4h5.1L10 21.4l8.2-11.1h-5.4L13 2.6Z"/></svg>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <div style="font:600 15px/20px Barlow;color:#F0E2AE">Hub unpowered — management is offline</div>
+                <div style="font:400 13px/18px Barlow;color:#C9BE94">Teleportation continues on every route in this channel. Restore power to rename, pause, delete or reset anything.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-wrap:wrap;gap:1px;background:rgba(0,0,0,.5)">
+
+            <!-- route list -->
+            <div style="flex:1 1 240px;min-width:240px;padding:16px;display:flex;flex-direction:column;gap:10px;background:rgba(26,26,27,.6)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Routes</span>
+                <span style="margin-left:auto;font:500 12px/15px 'Barlow Semi Condensed';color:#7C7C7C">{{ hubRouteCount }}</span>
+              </div>
+              <input type="text" value="{{ hubRouteQuery }}" onChange="{{ onHubRouteQuery }}" placeholder="Filter routes…" aria-label="Filter routes" style="background:#141414;border:1px solid #4a4a4a;color:#EDEDED;font:400 14px/19px Barlow;padding:7px 10px;border-radius:2px;min-width:0" style-focus="outline:2px solid #E8963C;outline-offset:-2px;border-color:#E8963C">
+              <div class="rl-scroll" style="display:flex;flex-direction:column;gap:2px;max-height:520px;overflow-y:auto;background:#141414;border:1px solid rgba(0,0,0,.5);padding:2px">
+                <sc-for list="{{ hubRoutes }}" as="r" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ r.pick }}" style="display:grid;grid-template-columns:20px minmax(0,1fr);align-items:center;gap:9px;text-align:left;padding:9px 10px;background:{{ r.bg }};border:1px solid {{ r.bd }};cursor:pointer;min-width:0" style-hover="background:#3e3e3e" style-focus="outline:2px solid #E8963C;outline-offset:-2px">
+                    <span style="display:flex;justify-content:center;color:{{ r.mediumFg }}">{{ r.icon }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                      <span style="font:500 15px/20px Barlow;color:{{ r.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.name }}">{{ r.name }}</span>
+                      <span style="font:400 11px/15px Barlow;color:#8A8A8A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.meta }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- route detail + management -->
+            <div style="flex:1 1 300px;min-width:280px;padding:16px;display:flex;flex-direction:column;gap:14px;background:rgba(20,20,21,.55)">
+              <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Selected route</div>
+                <div style="font:700 20px/25px Barlow;color:#F6B25C;word-break:break-word">{{ selRouteName }}</div>
+                <div style="font:400 12px/17px Barlow;color:#8A8A8A">{{ hubName }} · {{ selRouteMedium }}</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,0,0,.4)">
+                <div style="padding:10px 12px;background:rgba(32,32,32,.8)">
+                  <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">Throughput</div>
+                  <div style="font:600 21px/27px Barlow;font-variant-numeric:tabular-nums;color:{{ selRouteTpFg }}">{{ selRouteTp }}</div>
+                </div>
+                <div style="padding:10px 12px;background:rgba(32,32,32,.8)">
+                  <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">State</div>
+                  <div style="font:600 21px/27px Barlow;color:{{ selRouteStateFg }}">{{ selRouteState }}</div>
+                </div>
+                <div style="padding:10px 12px;background:rgba(32,32,32,.8)">
+                  <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">Inputs</div>
+                  <div style="font:600 21px/27px Barlow;font-variant-numeric:tabular-nums;color:#E0E0E0">{{ selRouteIn }}</div>
+                </div>
+                <div style="padding:10px 12px;background:rgba(32,32,32,.8)">
+                  <div style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A">Outputs</div>
+                  <div style="font:600 21px/27px Barlow;font-variant-numeric:tabular-nums;color:#E0E0E0">{{ selRouteOut }}</div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Routine</div>
+                <sc-for list="{{ routineActions }}" as="a" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ a.run }}" disabled="{{ a.disabled }}" style="display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;background:{{ a.bg }};border:1px solid {{ a.bd }};color:{{ a.fg }};font:500 15px/20px Barlow;cursor:{{ a.cursor }};border-radius:2px;min-width:0" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:-2px">
+                    <span style="flex:1;min-width:0">{{ a.label }}</span>
+                    <span style="font:400 11px/15px Barlow;color:#8A8A8A;text-align:right;max-width:150px">{{ a.note }}</span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:rgba(30,20,18,.55);border:1px solid rgba(209,75,60,.32)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#D1705E" stroke-width="1.9"><path d="M10 2.6 18.4 17H1.6L10 2.6Z"/></svg>
+                  <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#D1705E">Destructive & restricted</span>
+                </div>
+                <sc-for list="{{ dangerActions }}" as="a" hint-placeholder-count="2">
+                  <button type="button" onClick="{{ a.run }}" disabled="{{ a.disabled }}" style="display:flex;align-items:flex-start;gap:10px;text-align:left;padding:10px 12px;background:{{ a.bg }};border:1px solid {{ a.bd }};color:{{ a.fg }};font:500 15px/20px Barlow;cursor:{{ a.cursor }};border-radius:2px;min-width:0" style-hover="filter:brightness(1.12)" style-focus="outline:2px solid #F6BD74;outline-offset:-2px">
+                    <span style="flex:1;min-width:0">{{ a.label }}</span>
+                    <span style="font:400 11px/15px Barlow;color:{{ a.noteFg }};text-align:right;max-width:160px">{{ a.note }}</span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ hubToast }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:9px;padding:9px 12px;background:{{ hubToastBg }};border:1px solid {{ hubToastBd }}">
+                  <span style="color:{{ hubToastFg }}">{{ hubToastIcon }}</span>
+                  <span style="font:500 13px/18px Barlow;color:{{ hubToastFg }}">{{ hubToast }}</span>
+                </div>
+              </sc-if>
+            </div>
+
+            <!-- directory -->
+            <div style="flex:1 1 820px;min-width:min(100%,520px);padding:16px;display:flex;flex-direction:column;gap:10px;background:rgba(26,26,27,.6)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Endpoint directory</span>
+                <span style="font:500 12px/15px 'Barlow Semi Condensed';color:#7C7C7C">selected by route + page</span>
+                <div style="margin-left:auto;display:flex;align-items:center;gap:7px">
+                  <input type="text" value="{{ dirQuery }}" onChange="{{ onDirQuery }}" placeholder="Filter this page…" aria-label="Filter directory page" style="width:190px;background:#141414;border:1px solid #4a4a4a;color:#EDEDED;font:400 14px/19px Barlow;padding:7px 10px;border-radius:2px" style-focus="outline:2px solid #E8963C;outline-offset:-2px;border-color:#E8963C">
+                  <span title="Cross-page name search is a proposed extension; the API selects by route and page." style="padding:4px 8px;background:rgba(90,140,180,.14);border:1px dashed rgba(120,170,210,.55);color:#8FB8D6;font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.12em;text-transform:uppercase;cursor:help">Proposal: cross-page search</span>
+                </div>
+              </div>
+
+              <div class="rl-scroll" style="border:1px solid rgba(0,0,0,.5);background:#141414;min-width:0;overflow-x:auto">
+                <div style="display:grid;grid-template-columns:minmax(150px,2.2fr) minmax(120px,1.7fr) 52px 104px 78px 92px 120px;gap:0;min-width:730px;background:linear-gradient(#4a4a4a,#3d3d3d);border-bottom:1px solid rgba(0,0,0,.5)">
+                  <sc-for list="{{ dirColumns }}" as="c" hint-placeholder-count="7">
+                    <div style="padding:8px 10px;font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#D0D0D0;text-align:{{ c.align }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.label }}</div>
+                  </sc-for>
+                </div>
+                <div class="rl-scroll" style="max-height:472px;overflow-y:auto;min-width:730px">
+                  <sc-for list="{{ dirRows }}" as="d" hint-placeholder-count="8">
+                    <div tabindex="0" style="display:grid;grid-template-columns:minmax(150px,2.2fr) minmax(120px,1.7fr) 52px 104px 78px 92px 120px;align-items:center;background:{{ d.bg }};border-bottom:1px solid rgba(0,0,0,.35);outline-offset:-2px;min-width:0" style-hover="background:#3a3a3a" style-focus="outline:2px solid #E8963C">
+                      <div style="padding:9px 10px;min-width:0">
+                        <div style="font:500 15px/20px Barlow;color:#E4E4E4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ d.name }}">{{ d.name }}</div>
+                        <div style="font:400 11px/15px Barlow;color:#7C7C7C">{{ d.sub }}</div>
+                      </div>
+                      <div style="padding:9px 10px;min-width:0;font:400 13px/18px Barlow;color:#B4B4B4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ d.route }}">{{ d.route }}</div>
+                      <div style="padding:9px 6px;text-align:center"><span style="display:inline-block;padding:2px 6px;background:{{ d.dirBg }};border:1px solid {{ d.dirBd }};color:{{ d.dirFg }};font:600 11px/15px 'Barlow Semi Condensed';letter-spacing:.1em">{{ d.dir }}</span></div>
+                      <div style="padding:9px 10px;font:400 13px/18px Barlow;color:{{ d.mediumFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ d.medium }}">{{ d.medium }}</div>
+                      <div style="padding:9px 10px;font:500 13px/18px Barlow;color:{{ d.enFg }}">{{ d.enabled }}</div>
+                      <div style="padding:9px 10px;font:600 14px/18px Barlow;font-variant-numeric:tabular-nums;color:#D6D6D6;text-align:right">{{ d.buffered }}</div>
+                      <div style="padding:9px 10px;font:400 12px/16px Barlow;font-variant-numeric:tabular-nums;color:#8A8A8A;text-align:right;white-space:nowrap">{{ d.pos }}</div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ dirEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:56px 20px;text-align:center">
+                      <div style="font:500 16px/21px Barlow;color:#9C9C9C">{{ dirEmptyTitle }}</div>
+                      <div style="font:400 13px/19px Barlow;color:#7C7C7C;max-width:380px">{{ dirEmptyBody }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="font:500 13px/18px Barlow;color:#B4B4B4;font-variant-numeric:tabular-nums">{{ pageLabel }}</div>
+                <div style="font:400 12px/17px Barlow;color:#7C7C7C">64 endpoints per page (backend limit)</div>
+                <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                  <button type="button" onClick="{{ prevPage }}" disabled="{{ prevDisabled }}" style="padding:7px 13px;background:{{ prevBg }};border:1px solid {{ prevBd }};color:{{ prevFg }};font:500 14px/18px Barlow;cursor:{{ prevCursor }};border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:2px">Prev</button>
+                  <sc-for list="{{ pageChips }}" as="p" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ p.go }}" style="min-width:34px;padding:7px 9px;background:{{ p.bg }};border:1px solid {{ p.bd }};color:{{ p.fg }};font:600 14px/18px Barlow;font-variant-numeric:tabular-nums;cursor:pointer;border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:2px">{{ p.n }}</button>
+                  </sc-for>
+                  <button type="button" onClick="{{ nextPage }}" disabled="{{ nextDisabled }}" style="padding:7px 13px;background:{{ nextBg }};border:1px solid {{ nextBd }};color:{{ nextFg }};font:500 14px/18px Barlow;cursor:{{ nextCursor }};border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:2px">Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(#3c3c3c,#2f2f2f);border-top:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ hubStatusDot }}"></span>
+              <span style="font:400 14px/19px Barlow;color:#C4C4C4">{{ hubStatusMessage }}</span>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:9px">
+              <button type="button" onClick="{{ renameHub }}" disabled="{{ unpowered }}" style="padding:9px 16px;background:{{ renameBg }};border:1px solid {{ renameBd }};color:{{ renameFg }};font:500 15px/19px Barlow;cursor:{{ renameCursor }};border-radius:2px" style-hover="border-color:#E8963C" style-focus="outline:2px solid #E8963C;outline-offset:2px">Rename hub &amp; channel</button>
+              <button type="button" onClick="{{ closeWindow }}" style="padding:9px 20px;background:linear-gradient(#4a4a4a,#3a3a3a);border:1px solid #5a5a5a;color:#E8E8E8;font:500 15px/19px Barlow;cursor:pointer;border-radius:2px" style-hover="border-color:#8a8a8a" style-focus="outline:2px solid #E8963C;outline-offset:2px">Close</button>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ---------- STATE MATRIX ---------- -->
+        <sc-if value="{{ isStates }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font:600 24px/30px Barlow;color:#F0F0F0">Interaction state matrix</div>
+            <div style="font:400 15px/22px Barlow;color:#9C9C9C;max-width:760px">Every interactive class, in every state the implementation must ship. Orange is selection and focus; focus additionally draws a 2px outline so selection and focus are never confused.</div>
+          </div>
+
+          <sc-for list="{{ stateGroups }}" as="g" hint-placeholder-count="4">
+            <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+              <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);border-bottom:1px solid rgba(0,0,0,.5);display:flex;align-items:center;gap:10px">
+                <span style="font:600 15px/20px Barlow;color:#EDEDED">{{ g.title }}</span>
+                <span style="font:400 13px/18px Barlow;color:#9C9C9C">{{ g.note }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:1px;background:rgba(0,0,0,.4)">
+                <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="6">
+                  <div style="padding:14px;background:rgba(20,20,21,.9);display:flex;flex-direction:column;gap:10px;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#F2A64A">{{ s.state }}</span>
+                      <span style="margin-left:auto;font:400 11px/15px Barlow;color:#6E6E6E">{{ s.trigger }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;min-height:52px">{{ s.demo }}</div>
+                    <div style="font:400 12px/17px Barlow;color:#8A8A8A">{{ s.spec }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- ---------- TOKENS ---------- -->
+        <sc-if value="{{ isTokens }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font:600 24px/30px Barlow;color:#F0F0F0">Tokens, metrics &amp; asset notes</div>
+            <div style="font:400 15px/22px Barlow;color:#9C9C9C;max-width:760px">All values in logical design units at 1.0 UI scale. <code style="font:400 14px/20px ui-monospace,monospace;color:#F2A64A">tokens.json</code> and the icon SVG/PNG exports ship alongside this file.</div>
+          </div>
+
+          <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+            <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);font:600 15px/20px Barlow;color:#EDEDED;border-bottom:1px solid rgba(0,0,0,.5)">Colour</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1px;background:rgba(0,0,0,.4)">
+              <sc-for list="{{ colorTokens }}" as="t" hint-placeholder-count="12">
+                <div style="padding:12px;background:rgba(20,20,21,.9);display:flex;gap:11px;align-items:center;min-width:0">
+                  <span style="width:40px;height:40px;flex:0 0 40px;background:{{ t.value }};border:1px solid rgba(255,255,255,.14)"></span>
+                  <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                    <span style="font:600 13px/17px Barlow;color:#E4E4E4">{{ t.name }}</span>
+                    <span style="font:400 12px/16px ui-monospace,monospace;color:#8A8A8A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.value }}</span>
+                    <span style="font:400 11px/15px Barlow;color:#6E6E6E">{{ t.use }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px">
+            <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+              <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);font:600 15px/20px Barlow;color:#EDEDED;border-bottom:1px solid rgba(0,0,0,.5)">Type scale — Barlow</div>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ typeTokens }}" as="t" hint-placeholder-count="7">
+                  <div style="padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.35);display:flex;align-items:baseline;gap:14px;min-width:0">
+                    <span style="flex:1;min-width:0;color:#E8E8E8;font:{{ t.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.sample }}</span>
+                    <span style="font:400 11px/15px ui-monospace,monospace;color:#8A8A8A;text-align:right;white-space:nowrap">{{ t.spec }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+              <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);font:600 15px/20px Barlow;color:#EDEDED;border-bottom:1px solid rgba(0,0,0,.5)">Metrics</div>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ metricTokens }}" as="m" hint-placeholder-count="9">
+                  <div style="padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.35);display:flex;gap:14px;align-items:baseline">
+                    <span style="flex:1;font:400 13px/19px Barlow;color:#B4B4B4">{{ m.name }}</span>
+                    <span style="font:600 13px/19px ui-monospace,monospace;color:#F2A64A;white-space:nowrap">{{ m.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+            <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);font:600 15px/20px Barlow;color:#EDEDED;border-bottom:1px solid rgba(0,0,0,.5)">Resolution &amp; scaling</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:rgba(0,0,0,.4)">
+                <sc-for list="{{ resRules }}" as="r" hint-placeholder-count="3">
+                  <div style="padding:13px;background:rgba(20,20,21,.9);display:flex;flex-direction:column;gap:6px">
+                    <div style="font:600 15px/20px Barlow;color:#EDEDED">{{ r.res }}</div>
+                    <div style="font:600 11px/15px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#F2A64A">{{ r.scale }}</div>
+                    <div style="font:400 13px/19px Barlow;color:#9C9C9C">{{ r.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ scaleNotes }}" as="n" hint-placeholder-count="5">
+                <div style="display:flex;gap:10px;font:400 14px/21px Barlow;color:#B4B4B4"><span style="color:#F2A64A">—</span><span style="min-width:0">{{ n.text }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+            <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);font:600 15px/20px Barlow;color:#EDEDED;border-bottom:1px solid rgba(0,0,0,.5)">Nine-slice &amp; artwork exports</div>
+            <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Industrial plate — nine-slice map</div>
+                <div style="position:relative;height:190px;background:linear-gradient(160deg,#484848,#343434 46%,#2b2b2b);border:1px solid rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.11)">
+                  <div style="position:absolute;left:24px;right:24px;top:0;bottom:0;border-left:1px dashed rgba(232,150,60,.8);border-right:1px dashed rgba(232,150,60,.8)"></div>
+                  <div style="position:absolute;top:24px;bottom:24px;left:0;right:0;border-top:1px dashed rgba(232,150,60,.8);border-bottom:1px dashed rgba(232,150,60,.8)"></div>
+                  <div style="position:absolute;left:6px;top:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a)"></div>
+                  <div style="position:absolute;right:6px;top:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a)"></div>
+                  <div style="position:absolute;left:6px;bottom:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a)"></div>
+                  <div style="position:absolute;right:6px;bottom:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8d8d8d,#3a3a3a)"></div>
+                  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:600 12px/16px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:#C9A46E">Stretch X + Y</div>
+                  <div style="position:absolute;left:2px;top:50%;transform:translateY(-50%);font:600 10px/13px 'Barlow Semi Condensed';color:#C9A46E">24</div>
+                  <div style="position:absolute;left:50%;top:2px;transform:translateX(-50%);font:600 10px/13px 'Barlow Semi Condensed';color:#C9A46E">24</div>
+                </div>
+                <sc-for list="{{ sliceNotes }}" as="n" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;font:400 13px/19px Barlow;color:#A7A7A7"><span style="color:#F2A64A">—</span><span style="min-width:0">{{ n.text }}</span></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="font:600 11px/14px 'Barlow Semi Condensed';letter-spacing:.16em;text-transform:uppercase;color:#9C9C9C">Custom artwork — 5 building icons</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:1px;background:rgba(0,0,0,.4)">
+                  <sc-for list="{{ iconExports }}" as="i" hint-placeholder-count="5">
+                    <div style="padding:13px;background:rgba(20,20,21,.9);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                      <span style="color:#E9E9E9">{{ i.glyph }}</span>
+                      <span style="font:600 11px/15px 'Barlow Semi Condensed';letter-spacing:.08em;text-transform:uppercase;color:#D6D6D6">{{ i.name }}</span>
+                      <span style="font:400 10px/14px ui-monospace,monospace;color:#7C7C7C;word-break:break-all">{{ i.file }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ artNotes }}" as="n" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;font:400 13px/19px Barlow;color:#A7A7A7"><span style="color:#F2A64A">—</span><span style="min-width:0">{{ n.text }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ---------- SPEC ---------- -->
+        <sc-if value="{{ isSpec }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font:600 24px/30px Barlow;color:#F0F0F0">Interaction, keyboard &amp; implementation boundary</div>
+            <div style="font:400 15px/22px Barlow;color:#9C9C9C;max-width:760px">Behaviour the native widgets must reproduce, and the line between what today's API returns and what needs new backend work.</div>
+          </div>
+
+          <sc-for list="{{ specSections }}" as="s" hint-placeholder-count="5">
+            <div style="background:rgba(26,26,27,.85);border:1px solid #2c2c2e">
+              <div style="padding:11px 16px;background:linear-gradient(#3e3e3e,#333);border-bottom:1px solid rgba(0,0,0,.5);display:flex;align-items:center;gap:10px">
+                <span style="font:600 15px/20px Barlow;color:#EDEDED">{{ s.title }}</span>
+                <span style="margin-left:auto;font:600 10px/14px 'Barlow Semi Condensed';letter-spacing:.14em;text-transform:uppercase;color:{{ s.tagFg }};padding:3px 8px;border:1px solid {{ s.tagBd }};background:{{ s.tagBg }}">{{ s.tag }}</span>
+              </div>
+              <div style="padding:4px 0">
+                <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:minmax(160px,.5fr) minmax(0,1fr);gap:16px;padding:11px 16px;border-bottom:1px solid rgba(0,0,0,.3);min-width:0">
+                    <div style="font:600 13px/19px Barlow;color:#E0E0E0;min-width:0">{{ r.k }}</div>
+                    <div style="font:400 14px/21px Barlow;color:#A7A7A7;min-width:0">{{ r.v }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- closed-window proof -->
+        <sc-if value="{{ closed }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;background:rgba(10,10,11,.86);display:flex;align-items:center;justify-content:center;z-index:40">
+            <div style="max-width:520px;padding:26px;background:rgba(24,24,25,.98);border:1px solid #3a3a3a;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center">
+              <div style="font:600 19px/25px Barlow;color:#EDEDED">Window closed</div>
+              <div style="font:400 14px/21px Barlow;color:#9C9C9C">Esc and X both close the active Teleporter window even while a text field is focused. Input returns through the native game UI lifecycle; no layer, capture or scrim is left behind, and repeated open/close is safe.</div>
+              <button type="button" onClick="{{ reopen }}" style="padding:10px 20px;background:linear-gradient(#F0A64C,#DA8A2E);border:1px solid #F6BD74;color:#1A1207;font:600 15px/19px Barlow;cursor:pointer;border-radius:2px" style-hover="filter:brightness(1.1)" style-focus="outline:2px solid #F6BD74;outline-offset:2px">Re-open window</button>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1020}}">
+const OR = '#E8963C', ORB = '#F2A64A', CY = '#4FC3E8', RED = '#D1705E', GRN = '#7FC05F', YEL = '#E8C33C';
+const ICON_ITEM = React.createElement('svg', {width:15,height:15,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:1.6},
+  React.createElement('path',{key:'a',d:'M2 5.2 8 2.2l6 3v5.6L8 13.8l-6-3V5.2Z'}),
+  React.createElement('path',{key:'b',d:'M2 5.2 8 8.2l6-3M8 8.2v5.6',strokeWidth:1,opacity:.7}));
+const ICON_FLUID = React.createElement('svg', {width:15,height:15,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:1.6},
+  React.createElement('path',{key:'a',d:'M8 1.8c2.7 3.1 4.5 5.2 4.5 7.2a4.5 4.5 0 0 1-9 0c0-2 1.8-4.1 4.5-7.2Z'}));
+const svg = (w, paths, extra) => React.createElement('svg', Object.assign({width:w,height:w,viewBox:'0 0 32 32',fill:'none',stroke:'currentColor',strokeWidth:1.6}, extra||{}),
+  paths.map((d,i)=>React.createElement('path',{key:i,d:d.d,strokeWidth:d.w||1.6,opacity:d.o||1})));
+
+class Component extends DCLogic {
+  state = {
+    view: 'endpoint', epKind: 'item-in', epEmpty: false, powered: true,
+    label: 'Small Copper', channel: 'Copper Loop', route: 'small_copper_ingot',
+    dLabel: 'Small Copper', dChannel: 'Copper Loop', dRoute: 'small_copper_ingot',
+    enabled: true, routeQuery: '', newRoute: '', apply: 'idle', outcome: 'accept',
+    confirmFlush: false, flushed: false, closed: false, snap: 2,
+    hubRouteQuery: '', hubSel: 'sink', dirQuery: '', page: 1, hubToast: '', hubToastKind: 'ok',
+  };
+
+  componentDidMount() {
+    this._key = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); this.setState({ closed: true, confirmFlush: false }); }
+    };
+    window.addEventListener('keydown', this._key);
+    this._tick = setInterval(() => this.setState(s => ({ snap: s.snap >= 5 ? 0 : s.snap + 1 })), 1000);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._key); clearInterval(this._tick); clearTimeout(this._t); }
+
+  // ---- data ----
+  get routes() {
+    return [
+      { name:'sink', channel:'Default', medium:'item', tp:312, paused:false, inN:12, outN:1, endpoints:41 },
+      { name:'small_copper_ingot', channel:'Copper Loop', medium:'item', tp:118, paused:false, inN:3, outN:2, endpoints:6 },
+      { name:'mega_copper_ingot', channel:'Copper Loop', medium:'item', tp:46, paused:true, inN:1, outN:4, endpoints:5 },
+      { name:'north_farm', channel:'North Grid', medium:'fluid', tp:240, paused:false, inN:2, outN:3, endpoints:9 },
+      { name:'heavy_oil_residue_overflow_to_the_northern_coal_generator_bank', channel:'North Grid', medium:'fluid', tp:0, paused:false, inN:0, outN:0, endpoints:0 },
+      { name:'aluminium_scrap_west', channel:'North Grid', medium:'item', tp:74, paused:false, inN:2, outN:2, endpoints:4 },
+    ];
+  }
+  get isFluidEp() { return this.state.epKind.indexOf('fluid') === 0; }
+  get isOut() { return this.state.epKind.indexOf('out') > 0; }
+  get dirty() {
+    const s = this.state;
+    return { label: s.dLabel !== s.label, channel: s.dChannel !== s.channel, route: s.dRoute !== s.route };
+  }
+  get pendingCount() { const d = this.dirty; return (d.label?1:0)+(d.channel?1:0)+(d.route?1:0); }
+
+  nav(view, patch) { return () => { this.setState(Object.assign({ view: view, apply: 'idle', hubToast: '' }, patch || {})); }; }
+
+  setDraft(patch) { this.setState(Object.assign({ apply: 'idle' }, patch)); }
+
+  doApply = () => {
+    if (this.pendingCount === 0 || this.state.apply === 'validating') return;
+    this.setState({ apply: 'validating' });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      if (this.state.outcome === 'accept') {
+        this.setState(s => ({ apply: 'ok', label: s.dLabel, channel: s.dChannel, route: s.dRoute }));
+      } else {
+        this.setState(s => ({ apply: 'rejected', dRoute: s.route, dChannel: s.channel }));
+      }
+    }, 1400);
+  };
+
+  hubAct(msg, kind) { return () => { this.setState({ hubToast: msg, hubToastKind: kind || 'ok' }); }; }
+
+  // ---- state matrix demos ----
+  btn(label, style) {
+    return React.createElement('button', { type:'button', style: Object.assign({
+      padding:'10px 22px', font:'600 16px/20px Barlow', letterSpacing:'.03em', borderRadius:2, cursor:'pointer',
+      background:'linear-gradient(#F0A64C,#DA8A2E)', border:'1px solid #F6BD74', color:'#1A1207'
+    }, style||{}) }, label);
+  }
+  row(label, style, sub) {
+    return React.createElement('div', { style: Object.assign({
+      display:'flex', flexDirection:'column', gap:2, padding:'9px 11px', width:'100%',
+      background:'#333', border:'1px solid rgba(0,0,0,.4)'
+    }, style||{}) }, [
+      React.createElement('span',{key:'a',style:{font:'500 16px/21px Barlow',color:'#E4E4E4'}},label),
+      React.createElement('span',{key:'b',style:{font:'400 12px/16px Barlow',color:'#8A8A8A'}}, sub||'Copper Loop · 118 items/min')
+    ]);
+  }
+  field(value, style, ph) {
+    return React.createElement('div', { style: Object.assign({
+      padding:'9px 11px', width:'100%', background:'#141414', border:'1px solid #4a4a4a',
+      font:'400 16px/22px Barlow', color: ph ? '#6E6E6E' : '#EDEDED'
+    }, style||{}) }, value);
+  }
+  banner(text, fg, bg, bd) {
+    return React.createElement('div', { style:{display:'flex',alignItems:'center',gap:9,padding:'8px 12px',background:bg,border:'1px solid '+bd,font:'500 14px/19px Barlow',color:fg} }, text);
+  }
+
+  renderVals() {
+    const s = this.state, d = this.dirty, fluid = this.isFluidEp, out = this.isOut;
+    const mediumFg = fluid ? CY : '#E4E4E4';
+    const sel = (on) => ({ bg: on ? '#3a2f22' : '#2e2e2e', bd: on ? OR : 'transparent', fg: on ? '#F6B25C' : '#DDD', dot: on ? ORB : '#5a5a5a' });
+
+    // nav
+    const screens = [
+      ['endpoint', 'Endpoint · Item IN', { epKind:'item-in', epEmpty:false, label:'Small Copper', dLabel:'Small Copper', channel:'Copper Loop', dChannel:'Copper Loop', route:'small_copper_ingot', dRoute:'small_copper_ingot', enabled:true, flushed:false, routeQuery:'' }],
+      ['endpoint', 'Endpoint · Fluid OUT', { epKind:'fluid-out', epEmpty:false, label:'North West Farm', dLabel:'North West Farm', channel:'North Grid', dChannel:'North Grid', route:'north_farm', dRoute:'north_farm', enabled:true, flushed:false, routeQuery:'' }],
+      ['endpoint', 'Endpoint · New & empty', { epKind:'item-in', epEmpty:true, label:'', dLabel:'', channel:'Default', dChannel:'Default', route:'', dRoute:'', enabled:false, routeQuery:'', newRoute:'' }],
+      ['endpoint', 'Endpoint · No search match', { epKind:'item-in', epEmpty:false, routeQuery:'quartz_' }],
+      ['hub', 'Hub · Powered', { powered:true, page:1, dirQuery:'', hubSel:'sink' }],
+      ['hub', 'Hub · Unpowered', { powered:false, page:1, dirQuery:'', hubSel:'sink' }],
+      ['hub', 'Hub · Empty route', { powered:true, hubSel:'heavy_oil_residue_overflow_to_the_northern_coal_generator_bank', page:1, dirQuery:'' }],
+    ];
+    const navFor = (list, kinds) => list.map(([v, label, patch]) => {
+      const on = s.view === v && Object.keys(patch||{}).every(k => k === 'label' || k === 'dLabel' || k === 'routeQuery' || k === 'newRoute' || k === 'dirQuery' || k === 'page' ? true : s[k] === patch[k])
+        && (v !== 'endpoint' || (patch.routeQuery === 'quartz_' ? s.routeQuery === 'quartz_' : s.routeQuery !== 'quartz_'))
+        && (v !== 'endpoint' || s.epEmpty === !!patch.epEmpty);
+      const c = sel(on);
+      return { label: label, go: this.nav(v, patch), bg: c.bg, bd: c.bd, fg: c.fg, dot: c.dot };
+    });
+    const docs = [['states','State matrix'],['tokens','Tokens & metrics'],['spec','Interaction spec']].map(([v,label]) => {
+      const c = sel(s.view === v);
+      return { label: label, go: this.nav(v), bg: c.bg, bd: c.bd, fg: c.fg, dot: c.dot };
+    });
+
+    // endpoint route list
+    const chanRoutes = this.routes.filter(r => r.channel === s.dChannel);
+    const q = s.routeQuery.trim().toLowerCase();
+    const shown = chanRoutes.filter(r => !q || r.name.toLowerCase().indexOf(q) >= 0);
+    const visibleRoutes = (s.epEmpty ? [] : shown).map(r => ({
+      name: r.name, pick: () => this.setDraft({ dRoute: r.name, newRoute: '' }),
+      bg: s.dRoute === r.name ? '#3a2f22' : '#333', bd: s.dRoute === r.name ? OR : 'rgba(0,0,0,.4)',
+      fg: s.dRoute === r.name ? '#F6B25C' : '#E4E4E4',
+      icon: r.medium === 'fluid' ? ICON_FLUID : ICON_ITEM,
+      mediumFg: r.medium === 'fluid' ? CY : '#9C9C9C',
+      meta: r.medium === 'fluid' ? 'Fluid route · ' + r.endpoints + ' endpoints' : 'Item route · ' + r.endpoints + ' endpoints',
+      paused: r.paused, tp: r.tp === 0 ? '—' : (r.medium === 'fluid' ? r.tp + ' m³/min' : r.tp + ' /min'),
+      tpFg: r.tp === 0 ? '#6E6E6E' : (r.medium === 'fluid' ? CY : '#D6D6D6'),
+    }));
+
+    const chips = ['Default','Copper Loop','North Grid'].map(c => {
+      const on = s.dChannel === c;
+      return { name: c, meta: c === 'Default' ? 'no hub' : this.routes.filter(r=>r.channel===c).length + ' routes',
+        pick: () => this.setDraft({ dChannel: c, dRoute: '', newRoute: '', routeQuery: '' }),
+        bg: on ? '#3a2f22' : '#2e2e2e', bd: on ? OR : '#4a4a4a', fg: on ? '#F6B25C' : '#DDD', dot: on ? ORB : '#5a5a5a' };
+    });
+
+    const newOk = s.newRoute.trim().length > 0;
+    const existing = chanRoutes.some(r => r.name === s.newRoute.trim());
+    const applying = s.apply === 'validating';
+    const hasPending = this.pendingCount > 0;
+
+    // buffer
+    const bufPct = fluid ? (s.flushed ? 0 : 78) : 21;
+    const bufQty = fluid ? (s.flushed ? '0 m³' : '1,860 m³') : '84 items';
+    const flushBlocked = !fluid || s.flushed || s.enabled;
+
+    // hub
+    const hq = s.hubRouteQuery.trim().toLowerCase();
+    const hubRoutes = this.routes.filter(r => !hq || r.name.toLowerCase().indexOf(hq) >= 0).map(r => {
+      const on = s.hubSel === r.name;
+      return { name: r.name, pick: () => this.setState({ hubSel: r.name, page: 1, dirQuery: '', hubToast: '' }),
+        bg: on ? '#3a2f22' : '#333', bd: on ? OR : 'rgba(0,0,0,.4)', fg: on ? '#F6B25C' : '#E4E4E4',
+        icon: r.medium === 'fluid' ? ICON_FLUID : ICON_ITEM, mediumFg: r.medium === 'fluid' ? CY : '#9C9C9C',
+        meta: r.channel + ' · ' + (r.paused ? 'paused' : (r.tp === 0 ? 'no traffic' : r.tp + (r.medium==='fluid'?' m³/min':' /min'))) };
+    });
+    const selR = this.routes.filter(r => r.name === s.hubSel)[0] || this.routes[0];
+    const empty = selR.endpoints === 0;
+    const unpow = !s.powered;
+    const dis = (why, disabled, danger) => ({
+      disabled: !!disabled, note: why, cursor: disabled ? 'not-allowed' : 'pointer',
+      bg: disabled ? '#242424' : (danger ? 'linear-gradient(#4a2e28,#3a241f)' : 'linear-gradient(#3c3c3c,#333)'),
+      bd: disabled ? '#2e2e2e' : (danger ? 'rgba(209,112,94,.55)' : '#4a4a4a'),
+      fg: disabled ? '#6E6E6E' : (danger ? '#F0C9C1' : '#E4E4E4'),
+      noteFg: disabled ? '#6E6E6E' : '#C9A49B',
+    });
+    const routine = [
+      Object.assign({ label: selR.paused ? 'Resume route' : 'Pause route', run: this.hubAct(selR.paused ? 'Route resumed. Deliveries flowing.' : 'Route paused. Endpoints keep buffering.') }, dis(unpow ? 'needs power' : 'affects all endpoints', unpow)),
+      Object.assign({ label: 'Rename route', run: this.hubAct('Rename submitted — awaiting server confirmation.', 'pending') }, dis(unpow ? 'needs power' : 'name must be unique in channel', unpow)),
+      Object.assign({ label: 'Rename hub & channel', run: this.hubAct('Channel renamed to North Grid.') }, dis(unpow ? 'needs power' : 'renames the channel too', unpow)),
+    ];
+    const danger = [
+      Object.assign({ label: 'Delete route', run: this.hubAct(empty ? 'Route deleted.' : 'Refused: route still has endpoints.', empty ? 'ok' : 'err') },
+        dis(unpow ? 'needs power' : (empty ? 'route is unused' : selR.endpoints + ' endpoints still assigned'), unpow || !empty, true)),
+      Object.assign({ label: 'Reset fluid route', run: this.hubAct('Fluid type cleared. Route accepts a new fluid.') },
+        dis(unpow ? 'needs power' : (selR.medium !== 'fluid' ? 'item routes cannot be reset' : (empty ? 'route is empty' : 'route must be empty')), unpow || selR.medium !== 'fluid' || !empty, true)),
+    ];
+
+    // directory
+    const names = ['Copper Feed A','Copper Feed B','Smelter Bank 3 Intake','North West Farm — Fluid Drop Point For Coal Generators','Sink Overflow','Aluminium Line Tap','Dock 12 Loader','Outpost Tiny'];
+    const dq = s.dirQuery.trim().toLowerCase();
+    const rows = (empty ? [] : names.map((n, i) => ({
+      name: n, sub: 'ID #' + (4120 + i * 7),
+      route: selR.channel + ' / ' + selR.name,
+      dir: i % 3 === 0 ? 'OUT' : 'IN', medium: selR.medium === 'fluid' ? 'Heavy Oil Residue' : 'Copper Ingot',
+      enabled: i === 5 ? 'Disabled' : 'Enabled',
+      buffered: selR.medium === 'fluid' ? (120 + i * 37) + ' m³' : (12 + i * 23) + '',
+      pos: (i % 2 ? '-' : '') + (1200 + i * 431) + ' · ' + (800 + i * 219) + ' · ' + (90 + i * 4),
+    }))).filter(r => !dq || r.name.toLowerCase().indexOf(dq) >= 0).map((r, i) => Object.assign(r, {
+      bg: i % 2 ? 'rgba(48,48,48,.55)' : 'rgba(38,38,38,.55)',
+      dirBg: r.dir === 'IN' ? 'rgba(127,192,95,.13)' : 'rgba(232,150,60,.13)',
+      dirBd: r.dir === 'IN' ? 'rgba(127,192,95,.5)' : 'rgba(232,150,60,.5)',
+      dirFg: r.dir === 'IN' ? GRN : ORB,
+      mediumFg: selR.medium === 'fluid' ? CY : '#B4B4B4',
+      enFg: r.enabled === 'Enabled' ? '#C4C4C4' : '#8A8A8A',
+    }));
+    const total = selR.endpoints === 0 ? 0 : (selR.name === 'sink' ? 147 : selR.endpoints);
+    const pages = Math.max(1, Math.ceil(total / 64));
+
+    const tokens = [
+      ['surface/window','rgba(22,22,23,.94)','window body over world'],
+      ['surface/titlebar','linear-gradient(#3E3E3E,#313131)','56px title bar'],
+      ['surface/plate','linear-gradient(160deg,#484848,#2B2B2B)','industrial plate, nine-slice'],
+      ['surface/row','#333333','list row default'],
+      ['surface/row-hover','#3E3E3E','list row hover'],
+      ['surface/input','#141414','text field & list well'],
+      ['accent/orange','#E8963C','selection + focus'],
+      ['accent/orange-bright','#F2A64A','pending, selected text'],
+      ['accent/orange-press','#C97C28','pressed primary'],
+      ['accent/cyan','#4FC3E8','fluid values only'],
+      ['status/ok','#7FC05F','confirmed, IN direction'],
+      ['status/warn','#E8C33C','paused, unpowered'],
+      ['status/error','#D1705E','rejected, destructive'],
+      ['ink/primary','#E8E8E8','body text'],
+      ['ink/dim','#9C9C9C','labels, meta'],
+      ['ink/mute','#6E6E6E','disabled, hints'],
+    ].map(([name, value, use]) => ({ name, value, use }));
+
+    const type = [
+      ["Item Teleporter (In)", "500 21px/26px Barlow", '21 / 26 · 500'],
+      ["ITEM TELEPORTER (IN)", "600 17px/21px 'Barlow Condensed'", "17 / 21 · 600 cond · .06em"],
+      ["Endpoint label", "600 11px/14px 'Barlow Semi Condensed'", '11 / 14 · 600 · .16em caps'],
+      ["small_copper_ingot", '700 22px/26px Barlow', '22 / 26 · 700'],
+      ['List row primary', '500 16px/21px Barlow', '16 / 21 · 500'],
+      ['Body & field text', '400 15px/21px Barlow', '15 / 21 · 400'],
+      ['312 items/min', '600 24px/30px Barlow', '24 / 30 · 600 tabular'],
+      ['Row meta / hint', '400 12px/17px Barlow', '12 / 17 · 400'],
+    ].map(([sample, font, spec]) => ({ sample, font, spec }));
+
+    const metrics = [
+      ['Endpoint window', '1320 × 760 du'], ['Hub window', '1560 × 880 du'],
+      ['Minimum usable', '1120 × 680 du'], ['Title bar height', '56 du'],
+      ['Close hit box', '66 × 56 du'], ['Controller / touch minimum', '44 du'],
+      ['Spacing scale', '4 · 8 · 12 · 16 · 18 · 24 · 32'], ['Corner radius', '0 window · 2 controls'],
+      ['List row height', '42 du (two-line 52)'], ['Directory row height', '46 du'],
+      ['Scroll well max height', '520 du'], ['Border widths', '1 du hairline · 2 du focus'],
+      ['Directory column budget', '730 du min (150/120 flex + 52/104/78/92/120 fixed)'],
+      ['Directory share of hub', 'flex-basis 820 du, wraps full-width below 1120 du'],
+      ['Window backdrop', 'blur 2 du · opacity .94'], ['Plate bevel', 'inset 1 du #FFF @11% / #000 @45%'],
+    ].map(([name, value]) => ({ name, value }));
+
+    const res = [
+      ['1920 × 1080', 'scale 1.0', 'Endpoint 1320×760 and hub 1560×880 both fit with ≥180 du world margin. Reference capture size.'],
+      ['2560 × 1440', 'scale 1.25', 'Windows grow with scale; they never exceed 72% of the shorter axis. Row counts unchanged.'],
+      ['3440 × 1440', 'scale 1.25, centred', 'Width is capped at 1560 du — no full-bleed stretch. Ultrawide gains world margin, not columns.'],
+    ].map(([res, scale, note]) => ({ res, scale, note }));
+
+    const scaleNotes = [
+      { text: 'Windows are centred, sized in logical units, and multiplied by the game UI scale slider; they are never a percentage of the viewport.' },
+      { text: 'Below the 1120 × 680 du minimum, drop the hub to two columns (routes+detail, then directory below) rather than shrinking type.' },
+      { text: 'Type never scales below the listed sizes. Density is recovered by reducing visible rows and letting the list scroll.' },
+      { text: 'Scrolling lives inside the route list and the directory only. The window itself never scrolls.' },
+      { text: 'Snapshot refresh repaints values in place: typed text, caret, selection and scroll offset are all preserved.' },
+    ];
+
+    const slice = [
+      { text: 'Plate frame: 24 du fixed corners, edges stretch on one axis, centre stretches both. Screws live inside the corner quads.' },
+      { text: 'Row well and directory frame: 8 du corners, 1 du border — safe to render as a 3×3 slice or a simple stroked box.' },
+      { text: 'Title bar is a vertical 3-slice: 56 du tall, 1 du top highlight, gradient stretched horizontally.' },
+      { text: 'No text, counters, selection highlight or throughput value is baked into any background image.' },
+    ];
+
+    const icons = [
+      ['Item Teleporter (In)', 'teleporter_item_in', [{d:'M6 11 16 6l10 5v10L16 26 6 21V11Z'},{d:'M6 11l10 5 10-5M16 16v10',w:1.1,o:.7},{d:'M16 2.5v4.5M13.4 5.2 16 7.8l2.6-2.6',w:1.8}]],
+      ['Item Teleporter (Out)', 'teleporter_item_out', [{d:'M6 11 16 6l10 5v10L16 26 6 21V11Z'},{d:'M6 11l10 5 10-5M16 16v10',w:1.1,o:.7},{d:'M16 7V2.5M13.4 4.3 16 1.7l2.6 2.6',w:1.8}]],
+      ['Fluid Teleporter (In)', 'teleporter_fluid_in', [{d:'M16 9c3.8 4.4 6.4 7.4 6.4 10.3a6.4 6.4 0 0 1-12.8 0C9.6 16.4 12.2 13.4 16 9Z'},{d:'M16 1.5v4.8M13.4 4.4 16 7l2.6-2.6',w:1.8}]],
+      ['Fluid Teleporter (Out)', 'teleporter_fluid_out', [{d:'M16 9c3.8 4.4 6.4 7.4 6.4 10.3a6.4 6.4 0 0 1-12.8 0C9.6 16.4 12.2 13.4 16 9Z'},{d:'M16 6.3V1.5M13.4 3.4 16 .8l2.6 2.6',w:1.8}]],
+      ['Teleporter Hub', 'teleporter_hub', [{d:'M16 12.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6Z'},{d:'M16 3v7M16 22v7M3 16h7M22 16h7',w:1.4},{d:'M7 7l4.6 4.6M20.4 20.4 25 25M25 7l-4.6 4.6M11.6 20.4 7 25',w:1.1,o:.65}]],
+    ].map(([name, file, paths]) => ({ name: name, file: file + '.svg / @1×@2×.png', glyph: svg(30, paths) }));
+
+    const art = [
+      { text: 'Each icon ships as a transparent PNG at 32 and 64 px plus its source SVG; monochrome #E9E9E9, tinted in-engine.' },
+      { text: 'Reused stock assets are marked in the spec table: window container, scrollbar, text field, item/fluid icons, close glyph.' },
+      { text: 'Only the five building icons and the plate/frame slices are new artwork. Everything else is base-game reuse.' },
+      { text: 'The direction arrow is part of each building icon so IN/OUT reads at 32 px in the title bar.' },
+    ];
+
+    const stateGroups = [
+      { title: 'Primary action — Apply', note: 'staged mutation, server validated', items: [
+        { state: 'Default', trigger: 'pending changes exist', demo: this.btn('Apply'), spec: 'Orange gradient, 1 du #F6BD74 border. Only enabled while a staged edit exists.' },
+        { state: 'Hover', trigger: 'pointer over', demo: this.btn('Apply', { filter:'brightness(1.1)' }), spec: 'brightness ×1.1, no movement.' },
+        { state: 'Pressed', trigger: 'mouse down / A', demo: this.btn('Apply', { background:'linear-gradient(#C97C28,#B06A1F)' }), spec: 'accent/orange-press, border unchanged.' },
+        { state: 'Focused', trigger: 'Tab / gamepad', demo: this.btn('Apply', { outline:'2px solid #F6BD74', outlineOffset:2 }), spec: '2 du outline offset 2 du — visible on top of selection orange.' },
+        { state: 'Loading', trigger: 'awaiting server', demo: this.btn('Validating…', { background:'linear-gradient(#8a6a3a,#6f5430)', color:'#F0DDBE', cursor:'progress' }), spec: 'Label swaps to Validating…, spinner, control disabled. Never shows success early.' },
+        { state: 'Disabled', trigger: 'nothing staged', demo: this.btn('Apply', { background:'#242424', border:'1px solid #2e2e2e', color:'#6E6E6E', cursor:'not-allowed' }), spec: 'No hover, no focus stop when there is nothing to apply.' },
+      ]},
+      { title: 'List row — route & directory', note: 'selection is orange, focus adds an outline', items: [
+        { state: 'Default', trigger: '—', demo: this.row('small_copper_ingot'), spec: 'surface/row on the input well, 1 du dark hairline.' },
+        { state: 'Hover', trigger: 'pointer over', demo: this.row('small_copper_ingot', { background:'#3E3E3E' }), spec: 'surface/row-hover. Cursor only, no selection change.' },
+        { state: 'Selected', trigger: 'click / Enter', demo: this.row('small_copper_ingot', { background:'#3a2f22', border:'1px solid '+OR }), spec: 'Warm ground + orange border; primary text goes accent/orange-bright.' },
+        { state: 'Selected + focused', trigger: 'keyboard nav', demo: this.row('small_copper_ingot', { background:'#3a2f22', border:'1px solid '+OR, outline:'2px solid #F6BD74', outlineOffset:2 }), spec: 'Both cues stack so focus is readable on the selected row.' },
+        { state: 'Disabled endpoint', trigger: 'enabled = false', demo: this.row('Aluminium Line Tap', { opacity:.55 }, 'Disabled · buffering 84 items'), spec: 'Row stays readable at 55% and keeps its focus stop; state is stated in words, not only by dimming.' },
+        { state: 'Long name', trigger: '> column width', demo: this.row('heavy_oil_residue_overflow_to_the_northern_coal_gen…', {}, 'Tooltip and detail panel show the full value'), spec: 'Single-line ellipsis; full string in tooltip and in the detail header, which wraps.' },
+      ]},
+      { title: 'Text field', note: 'label, route name, search', items: [
+        { state: 'Default', trigger: '—', demo: this.field('Small Copper'), spec: 'surface/input, 1 du #4A4A4A border.' },
+        { state: 'Placeholder', trigger: 'empty', demo: this.field('Name this endpoint', {}, true), spec: 'ink/mute. Never used as the value.' },
+        { state: 'Focused', trigger: 'click / Tab', demo: this.field('Small Copper', { border:'1px solid '+OR, outline:'2px solid #E8963C', outlineOffset:-2 }), spec: 'Esc still closes the window while the caret is here.' },
+        { state: 'Edited', trigger: 'value ≠ server', demo: this.field('Small Copper Bank 2', { border:'1px solid '+ORB }), spec: 'Label gains a “Needs apply” dot; the field keeps typed text through snapshots.' },
+        { state: 'Rejected', trigger: 'server refused', demo: this.field('north_farm', { border:'1px solid '+RED }), spec: 'Border error, reason in the footer, value reverted to the server truth.' },
+        { state: 'Disabled', trigger: 'hub unpowered', demo: this.field('North Grid', { background:'#1c1c1c', border:'1px solid #2e2e2e', color:'#6E6E6E' }), spec: 'Read-only with an explicit reason next to the group.' },
+      ]},
+      { title: 'Feedback', note: 'pending → validating → confirmed / rejected', items: [
+        { state: 'Pending', trigger: 'staged edit', demo: this.banner('2 changes pending — server validates on apply', ORB, 'rgba(232,150,60,.12)', 'rgba(232,150,60,.5)'), spec: 'Shown in the footer next to Apply, plus a dot on each changed field.' },
+        { state: 'Validating', trigger: 'apply sent', demo: this.banner('Submitting to teleporter network…', '#F0DDBE', 'rgba(138,106,58,.2)', 'rgba(200,150,80,.45)'), spec: 'No value in the UI changes yet. Nothing reads as saved.' },
+        { state: 'Confirmed', trigger: 'server ack', demo: this.banner('Assignment confirmed · Copper Loop / small_copper_ingot', GRN, 'rgba(127,192,95,.12)', 'rgba(127,192,95,.45)'), spec: 'Only now do the identity strip and live values change. Auto-clears after 6 s.' },
+        { state: 'Rejected', trigger: 'server refuse', demo: this.banner('Route change refused — drain the local buffer first (84 items held)', RED, 'rgba(209,112,94,.12)', 'rgba(209,112,94,.5)'), spec: 'Persists until dismissed or re-applied; draft reverts to server truth.' },
+        { state: 'Connecting', trigger: 'no snapshot yet', demo: this.banner('Connecting to teleporter network…', '#B4B4B4', 'rgba(60,60,60,.5)', '#4a4a4a'), spec: 'Values render as — with skeleton rows; controls disabled but focusable.' },
+        { state: 'Confirmation', trigger: 'destructive action', demo: this.banner('Destroy 1,860 m³ held in this local buffer?', '#F0DAD6', 'rgba(74,46,40,.8)', 'rgba(209,112,94,.6)'), spec: 'In-window overlay — never a second full-screen game window.' },
+      ]},
+    ];
+
+    const specSections = [
+      { title: 'Window lifecycle', tag: 'required', rows: [
+        { k: 'Escape', v: 'Closes the active Teleporter window from any focus state, including a focused text field. The key is consumed by the window, not the field.' },
+        { k: 'X control', v: '66 × 56 du at the title-bar right, lighter grey plate; identical close path to Escape.' },
+        { k: 'Close behaviour', v: 'Release input capture through the native game UI lifecycle, destroy the widget, leave no scrim or transparent layer. Repeated open/close must be leak-free.' },
+        { k: 'Nesting', v: 'Ordinary endpoint setup never opens a second full-screen window. Confirmations and rename are in-window overlays.' },
+        { k: 'Unsaved edits', v: 'Closing discards staged edits; nothing is applied without Apply. No blocking “are you sure” on close.' },
+      ]},
+      { title: 'Keyboard & focus order', tag: 'required', rows: [
+        { k: 'Endpoint order', v: 'Label → channel chips → route search → route list → new-route field → Use name → Enable switch → Revert → Apply → Close.' },
+        { k: 'Hub order', v: 'Route filter → route list → routine actions → destructive group → directory filter → directory rows → pagination → Rename → Close.' },
+        { k: 'Within lists', v: 'Arrow keys move the highlight, Enter selects, Home/End jump, PgUp/PgDn page the directory. The list is one tab stop.' },
+        { k: 'Focus ring', v: '2 du #F6BD74 outline, 2 du offset, drawn over selection orange. Never conveyed by colour fill alone.' },
+        { k: 'Controller', v: 'All targets ≥ 44 du. Face button = activate, shoulder = page, B/Circle = close. Needs an in-game pass to confirm.' },
+      ]},
+      { title: 'Data refresh & scrolling', tag: 'required', rows: [
+        { k: 'Snapshots', v: 'Periodic server snapshots repaint throughput, state, buffered quantities and directory rows in place.' },
+        { k: 'Preserved', v: 'Typed text, caret position, selection, list highlight and scroll offset survive every refresh.' },
+        { k: 'Scroll containers', v: 'Route list and endpoint directory only. Scroll position is never reset by a refresh or a pagination-free update.' },
+        { k: 'Pagination', v: 'Directory pages at the backend limit of 64 rows. Current page and total endpoint count always visible.' },
+        { k: 'Long values', v: 'Single-line ellipsis with tooltip in tables; wrapping in detail headers. The full value is always reachable.' },
+      ]},
+      { title: 'Product rules encoded in the UI', tag: 'required', rows: [
+        { k: 'Route naming', v: 'Routes are user-named strings, never an item picker. Two routes may carry the same item; the UI never implies the item chooses the route.' },
+        { k: 'Channels', v: 'Default needs no hub. Named channels exist because a hub was placed and named.' },
+        { k: 'Building type', v: 'Medium and IN/OUT come from the placed building and are shown read-only in the identity strip; the window cannot switch them.' },
+        { k: 'Fluid flush', v: 'Acts on this endpoint’s local buffer only, requires the endpoint disabled, and states that the pipe network is untouched.' },
+        { k: 'Unpowered hub', v: 'Management controls disable with the reason “needs power”; the banner states transport continues.' },
+      ]},
+      { title: 'Backend boundary', tag: 'proposal', tagKind: 'proposal', rows: [
+        { k: 'Available today', v: 'Route channel/name, medium, paused state, aggregate throughput; directory rows with name, route path, position, direction, medium, enabled, buffered; status message; pagination + total.' },
+        { k: 'Cross-page name search', v: 'Proposal. The directory filter in this prototype is explicitly labelled as filtering the current page only.' },
+        { k: 'Per-endpoint throughput', v: 'Proposal. Only aggregate route throughput is shown as a real value.' },
+        { k: 'Graphs, history, item grids, map preview', v: 'Not designed in — they need new backend work and are called out rather than implied.' },
+      ]},
+    ].map(sec => Object.assign(sec, sec.tagKind === 'proposal'
+      ? { tagFg: '#8FB8D6', tagBd: 'rgba(120,170,210,.55)', tagBg: 'rgba(90,140,180,.14)' }
+      : { tagFg: '#9C9C9C', tagBd: '#4a4a4a', tagBg: 'rgba(60,60,60,.5)' }));
+
+    const connecting = s.epEmpty && !s.dRoute && s.snap < 2;
+
+    return {
+      navScreens: navFor(screens), navDocs: docs,
+      stageCaption: s.view === 'endpoint' ? 'Endpoint settings window — opened by interacting with a placed teleporter'
+        : s.view === 'hub' ? 'Teleporter Hub window — channel management and endpoint directory'
+        : s.view === 'states' ? 'Reference — interaction states' : s.view === 'tokens' ? 'Reference — tokens and metrics' : 'Reference — interaction specification',
+      boundsLabel: s.view === 'hub' ? '1560 × 880 du' : s.view === 'endpoint' ? '1320 × 760 du' : 'n/a',
+      scaleLabel: '1.0 @ 1920 × 1080',
+      isEndpoint: s.view === 'endpoint', isHub: s.view === 'hub', isStates: s.view === 'states',
+      isTokens: s.view === 'tokens', isSpec: s.view === 'spec',
+      closed: s.closed, reopen: () => this.setState({ closed: false }),
+      closeWindow: () => this.setState({ closed: true, confirmFlush: false }),
+      setAccept: () => this.setState({ outcome: 'accept' }), setReject: () => this.setState({ outcome: 'reject' }),
+      acceptBg: s.outcome === 'accept' ? '#3a2f22' : '#242528', acceptBd: s.outcome === 'accept' ? OR : '#33353a',
+      rejectBg: s.outcome === 'reject' ? '#3a2426' : '#242528', rejectBd: s.outcome === 'reject' ? RED : '#33353a',
+
+      // identity
+      epWindowTitle: fluid ? (out ? 'Fluid Teleporter (Out)' : 'Fluid Teleporter (In)') : (out ? 'Item Teleporter (Out)' : 'Item Teleporter (In)'),
+      epBuildingId: fluid ? (out ? 'FLUID TELEPORTER (OUT)' : 'FLUID TELEPORTER (IN)') : (out ? 'ITEM TELEPORTER (OUT)' : 'ITEM TELEPORTER (IN)'),
+      dirBadgeText: out ? 'Out ← Network' : 'In → Network',
+      dirBadgeBg: out ? 'rgba(232,150,60,.14)' : 'rgba(127,192,95,.13)',
+      dirBadgeBd: out ? 'rgba(232,150,60,.55)' : 'rgba(127,192,95,.5)',
+      dirBadgeFg: out ? ORB : GRN,
+      mediumLabel: fluid ? 'Fluid · Heavy Oil Residue' : 'Items · mixed permitted',
+      mediumFg: mediumFg, isFluid: fluid,
+      liveChannel: s.channel || '—', liveRoute: s.route || 'Unassigned',
+      enabledPillText: s.enabled ? 'Enabled' : 'Disabled',
+      enabledPillBg: s.enabled ? 'rgba(127,192,95,.13)' : 'rgba(140,140,140,.12)',
+      enabledPillBd: s.enabled ? 'rgba(127,192,95,.5)' : 'rgba(160,160,160,.4)',
+      enabledPillFg: s.enabled ? GRN : '#A7A7A7',
+
+      // left column
+      draftLabel: s.dLabel, onLabel: (e) => this.setDraft({ dLabel: e.target.value }),
+      labelDirty: d.label, labelBd: d.label ? ORB : '#4a4a4a',
+      channelDirty: d.channel, channelChips: chips, draftChannel: s.dChannel || 'Default',
+      routeDirty: d.route, routeQuery: s.routeQuery, onRouteQuery: (e) => this.setState({ routeQuery: e.target.value }),
+      routeCountLabel: (s.epEmpty ? 0 : shown.length) + ' of ' + chanRoutes.length,
+      visibleRoutes: visibleRoutes,
+      noRouteMatch: !s.epEmpty && chanRoutes.length > 0 && shown.length === 0,
+      routesEmpty: s.epEmpty || chanRoutes.length === 0,
+      newRoute: s.newRoute, onNewRoute: (e) => this.setDraft({ newRoute: e.target.value }),
+      useNewRoute: () => newOk && !existing && this.setDraft({ dRoute: s.newRoute.trim() }),
+      newRouteDisabled: !newOk || existing,
+      newRouteBg: (!newOk || existing) ? '#242424' : 'linear-gradient(#3c3c3c,#333)',
+      newRouteBd: (!newOk || existing) ? '#2e2e2e' : '#4a4a4a',
+      newRouteFg: (!newOk || existing) ? '#6E6E6E' : '#E4E4E4',
+      newRouteCursor: (!newOk || existing) ? 'not-allowed' : 'pointer',
+      newRouteHint: existing ? '“' + s.newRoute.trim() + '” already exists in ' + s.dChannel + ' — pick it from the list above.'
+        : (fluid ? 'Fluid routes lock to the first fluid delivered. Items and fluids never share a route.'
+          : 'Created on Apply, inside ' + (s.dChannel || 'Default') + '. Item routes may carry mixed items.'),
+
+      // right column
+      draftRoute: s.dRoute || 'No route selected',
+      draftRouteNote: !s.dRoute ? 'Pick an existing route or name a new one. An unassigned endpoint buffers and delivers nothing.'
+        : (d.route ? 'Reassignment is validated by the server and can be refused until the local buffer drains.'
+          : 'Current server assignment. ' + (fluid ? 'Fluid type must stay compatible.' : 'Mixed items are permitted on this route.')),
+      statusDot: connecting ? '#A7A7A7' : (s.apply === 'rejected' ? RED : (s.enabled ? GRN : YEL)),
+      statusAnim: connecting ? 'teleporterPulse 1.4s infinite' : 'none',
+      statusFg: connecting ? '#B4B4B4' : '#D6D6D6',
+      statusMessage: connecting ? 'Connecting to teleporter network…'
+        : s.apply === 'rejected' ? 'Last mutation refused by the server. Live assignment unchanged.'
+        : s.enabled ? 'Linked to ' + (s.channel || 'Default') + ' — network acknowledging deliveries.'
+        : 'Endpoint disabled. Buffer held, no deliveries accepted.',
+      snapshotAge: s.snap + 's ago',
+      throughputValue: connecting ? '—' : (fluid ? '240' : '118'),
+      throughputUnit: fluid ? 'm³/min' : 'items/min',
+      routeStateLabel: selR && false ? '' : (s.route ? 'Active' : '—'),
+      routeStateFg: s.route ? GRN : '#6E6E6E',
+      routeStateNote: s.route ? 'not paused at the hub' : 'no assignment',
+      bufferLabel: bufQty + (fluid ? ' / 2,400 m³' : ' / 400 items'),
+      bufferPct: bufPct + '%',
+      bufferFill: fluid ? 'linear-gradient(#5ED0F0,#2E93B8)' : 'linear-gradient(#F0A64C,#C97C28)',
+      bufferNote: fluid ? 'Local buffer of this building only — separate from the attached pipe network.'
+        : 'Local buffer of this building only. Route reassignment may be refused until it drains.',
+      bufferQty: bufQty,
+      flushDisabled: flushBlocked,
+      openFlush: () => !flushBlocked && this.setState({ confirmFlush: true }),
+      flushBg: flushBlocked ? '#242424' : 'linear-gradient(#4a2e28,#3a241f)',
+      flushBd: flushBlocked ? '#2e2e2e' : 'rgba(209,112,94,.6)',
+      flushFg: flushBlocked ? '#6E6E6E' : '#F0C9C1',
+      flushCursor: flushBlocked ? 'not-allowed' : 'pointer',
+      flushNoteFg: flushBlocked ? '#8A8A8A' : '#C9A49B',
+      flushNote: !fluid ? '' : s.flushed ? 'Buffer empty — nothing to flush.'
+        : s.enabled ? 'Disable the endpoint first, then flush. Destroys the held fluid.'
+        : 'Destroys ' + bufQty + ' held here. The pipe network is not affected.',
+      confirmFlush: s.confirmFlush,
+      cancelFlush: () => this.setState({ confirmFlush: false }),
+      doFlush: () => this.setState({ confirmFlush: false, flushed: true }),
+
+      // footer
+      toggleEnabled: () => this.setState(st => ({ enabled: !st.enabled })),
+      switchLabel: s.enabled ? 'Enabled' : 'Disabled',
+      switchBg: s.enabled ? 'linear-gradient(#3d4a36,#2f3a2a)' : 'linear-gradient(#3c3c3c,#333)',
+      switchBd: s.enabled ? 'rgba(127,192,95,.5)' : '#4a4a4a',
+      switchFg: s.enabled ? '#CDE6BF' : '#C4C4C4',
+      knobLeft: s.enabled ? '25px' : '1px',
+      hasPending: hasPending && s.apply !== 'validating',
+      pendingLabel: this.pendingCount + (this.pendingCount === 1 ? ' change pending' : ' changes pending') + ' — server validates on apply',
+      showResult: s.apply === 'ok' || s.apply === 'rejected' || s.apply === 'validating',
+      resultBg: s.apply === 'ok' ? 'rgba(127,192,95,.12)' : s.apply === 'rejected' ? 'rgba(209,112,94,.12)' : 'rgba(138,106,58,.2)',
+      resultBd: s.apply === 'ok' ? 'rgba(127,192,95,.45)' : s.apply === 'rejected' ? 'rgba(209,112,94,.5)' : 'rgba(200,150,80,.45)',
+      resultFg: s.apply === 'ok' ? GRN : s.apply === 'rejected' ? RED : '#F0DDBE',
+      resultIcon: s.apply === 'validating'
+        ? React.createElement('svg',{width:14,height:14,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:2,style:{animation:'teleporterSpin .9s linear infinite'}},React.createElement('path',{d:'M8 1.5a6.5 6.5 0 1 1-6.5 6.5',strokeLinecap:'round'}))
+        : React.createElement('svg',{width:14,height:14,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:2},React.createElement('path',{d: s.apply === 'ok' ? 'M2.5 8.4 6 12l7.5-8' : 'M3 3l10 10M13 3 3 13'})),
+      resultText: s.apply === 'ok' ? 'Confirmed by server · ' + s.channel + ' / ' + s.route
+        : s.apply === 'rejected' ? 'Refused — drain the local buffer (' + bufQty + ' held) before reassigning this route'
+        : 'Submitting to teleporter network…',
+      revert: () => this.setState(st => ({ dLabel: st.label, dChannel: st.channel, dRoute: st.route, newRoute: '', apply: 'idle' })),
+      revertDisabled: !hasPending || applying,
+      revertBg: (!hasPending || applying) ? '#242424' : 'linear-gradient(#4a4a4a,#3a3a3a)',
+      revertBd: (!hasPending || applying) ? '#2e2e2e' : '#5a5a5a',
+      revertFg: (!hasPending || applying) ? '#6E6E6E' : '#E8E8E8',
+      revertCursor: (!hasPending || applying) ? 'not-allowed' : 'pointer',
+      apply: this.doApply,
+      applyDisabled: !hasPending || applying,
+      applyLabel: applying ? 'Validating…' : 'Apply',
+      applyBg: applying ? 'linear-gradient(#8a6a3a,#6f5430)' : (!hasPending ? '#242424' : 'linear-gradient(#F0A64C,#DA8A2E)'),
+      applyBd: applying ? 'rgba(200,150,80,.5)' : (!hasPending ? '#2e2e2e' : '#F6BD74'),
+      applyFg: applying ? '#F0DDBE' : (!hasPending ? '#6E6E6E' : '#1A1207'),
+      applyCursor: applying ? 'progress' : (!hasPending ? 'not-allowed' : 'pointer'),
+      applyShadow: (!hasPending || applying) ? 'none' : '0 1px 0 rgba(255,255,255,.18) inset',
+      applySpinner: applying
+        ? React.createElement('svg',{width:15,height:15,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:2,style:{animation:'teleporterSpin .9s linear infinite'}},React.createElement('path',{d:'M8 1.5a6.5 6.5 0 1 1-6.5 6.5',strokeLinecap:'round'}))
+        : null,
+
+      // hub
+      hubName: 'North Grid', unpowered: unpow,
+      powerPillText: s.powered ? 'Powered' : 'Unpowered',
+      powerPillBg: s.powered ? 'rgba(127,192,95,.13)' : 'rgba(232,195,60,.14)',
+      powerPillBd: s.powered ? 'rgba(127,192,95,.5)' : 'rgba(232,195,60,.55)',
+      powerPillFg: s.powered ? GRN : YEL,
+      hubRouteQuery: s.hubRouteQuery, onHubRouteQuery: (e) => this.setState({ hubRouteQuery: e.target.value }),
+      hubRouteCount: hubRoutes.length + ' of ' + this.routes.length, hubRoutes: hubRoutes,
+      selRouteName: selR.name, selRouteMedium: selR.medium === 'fluid' ? 'Fluid route · Heavy Oil Residue' : 'Item route · mixed items permitted',
+      selRouteTp: selR.tp === 0 ? '—' : selR.tp + (selR.medium === 'fluid' ? ' m³/min' : ' /min'),
+      selRouteTpFg: selR.tp === 0 ? '#6E6E6E' : (selR.medium === 'fluid' ? CY : '#E0E0E0'),
+      selRouteState: selR.paused ? 'Paused' : (selR.endpoints === 0 ? 'Unused' : 'Active'),
+      selRouteStateFg: selR.paused ? YEL : (selR.endpoints === 0 ? '#8A8A8A' : GRN),
+      selRouteIn: selR.inN, selRouteOut: selR.outN,
+      routineActions: routine, dangerActions: danger,
+      hubToast: s.hubToast,
+      hubToastBg: s.hubToastKind === 'err' ? 'rgba(209,112,94,.12)' : s.hubToastKind === 'pending' ? 'rgba(232,150,60,.12)' : 'rgba(127,192,95,.12)',
+      hubToastBd: s.hubToastKind === 'err' ? 'rgba(209,112,94,.5)' : s.hubToastKind === 'pending' ? 'rgba(232,150,60,.5)' : 'rgba(127,192,95,.45)',
+      hubToastFg: s.hubToastKind === 'err' ? RED : s.hubToastKind === 'pending' ? ORB : GRN,
+      hubToastIcon: React.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16',fill:'none',stroke:'currentColor',strokeWidth:2},React.createElement('path',{d: s.hubToastKind === 'err' ? 'M3 3l10 10M13 3 3 13' : 'M2.5 8.4 6 12l7.5-8'})),
+      renameHub: this.hubAct('Rename submitted — awaiting server confirmation.', 'pending'),
+      renameBg: unpow ? '#242424' : 'linear-gradient(#4a4a4a,#3a3a3a)',
+      renameBd: unpow ? '#2e2e2e' : '#5a5a5a', renameFg: unpow ? '#6E6E6E' : '#E8E8E8',
+      renameCursor: unpow ? 'not-allowed' : 'pointer',
+      hubStatusDot: unpow ? YEL : GRN,
+      hubStatusMessage: unpow ? 'Transport active · management offline until power is restored' : 'Snapshot ' + s.snap + 's ago · ' + this.routes.length + ' routes · ' + 147 + ' endpoints in channel',
+      dirQuery: s.dirQuery, onDirQuery: (e) => this.setState({ dirQuery: e.target.value }),
+      dirColumns: [['Endpoint','left'],['Route path','left'],['Dir','center'],['Medium','left'],['State','left'],['Buffered','right'],['Position (m)','right']].map(([label, align]) => ({ label, align })),
+      dirRows: rows, dirEmpty: rows.length === 0,
+      dirEmptyTitle: empty ? 'No endpoints on this route' : 'Nothing on this page matches “' + s.dirQuery + '”',
+      dirEmptyBody: empty ? 'The route exists but nothing is assigned to it. It can be deleted, or reset if it is a fluid route.'
+        : 'The filter only searches the 64 rows on this page. Cross-page name search is a proposed extension.',
+      pageLabel: total === 0 ? 'No endpoints' : 'Page ' + s.page + ' of ' + pages + ' · ' + total + ' endpoints',
+      pageChips: Array.from({ length: pages }, (_, i) => i + 1).map(n => ({
+        n: n, go: () => this.setState({ page: n }),
+        bg: s.page === n ? '#3a2f22' : 'linear-gradient(#4a4a4a,#3a3a3a)',
+        bd: s.page === n ? OR : '#5a5a5a', fg: s.page === n ? '#F6B25C' : '#E8E8E8',
+      })),
+      prevPage: () => this.setState(st => ({ page: Math.max(1, st.page - 1) })),
+      nextPage: () => this.setState(st => ({ page: Math.min(pages, st.page + 1) })),
+      prevDisabled: s.page <= 1, nextDisabled: s.page >= pages,
+      prevBg: s.page <= 1 ? '#242424' : 'linear-gradient(#4a4a4a,#3a3a3a)',
+      prevBd: s.page <= 1 ? '#2e2e2e' : '#5a5a5a', prevFg: s.page <= 1 ? '#6E6E6E' : '#E8E8E8',
+      prevCursor: s.page <= 1 ? 'not-allowed' : 'pointer',
+      nextBg: s.page >= pages ? '#242424' : 'linear-gradient(#4a4a4a,#3a3a3a)',
+      nextBd: s.page >= pages ? '#2e2e2e' : '#5a5a5a', nextFg: s.page >= pages ? '#6E6E6E' : '#E8E8E8',
+      nextCursor: s.page >= pages ? 'not-allowed' : 'pointer',
+
+      // reference pages
+      stateGroups: stateGroups, colorTokens: tokens, typeTokens: type, metricTokens: metrics,
+      resRules: res, scaleNotes: scaleNotes, sliceNotes: slice, iconExports: icons, artNotes: art,
+      specSections: specSections,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

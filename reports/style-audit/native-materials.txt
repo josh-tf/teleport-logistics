@@ -1,0 +1,12 @@
+/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01 class=MaterialInstanceConstant
+parent=<Object '/Game/FactoryGame/Buildable/-Shared/Material/MI_Factory2D_01.MI_Factory2D_01' (0x59a261f4800) Class 'MaterialInstanceConstant'>
+scalar RefractionDepthBias=0.0
+/Game/FactoryGame/Buildable/-Shared/Material/MI_Factory2D_01 class=MaterialInstanceConstant
+parent=<Object '/Game/FactoryGame/Buildable/-Shared/Material/MM_Factory_Array.MM_Factory_Array' (0x59a25dcd200) Class 'Material'>
+scalar EmissiveHeatIntensity=7.5
+scalar EmissiveLightIntensity=5.0
+scalar InputColorIntensity=5.0
+scalar Scale=20.0
+scalar RefractionDepthBias=0.0
+/Game/FactoryGame/Buildable/-Shared/Material/InputFog class=Material
+/Game/FactoryGame/Buildable/-Shared/Material/InputFogPlane class=StaticMesh

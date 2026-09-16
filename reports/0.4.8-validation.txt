@@ -1,0 +1,9 @@
+Relay 0.4.8 hotfix validation
+Windows client + WindowsServer cook/package: BUILD SUCCESSFUL, ExitCode=0
+Unreal asset inspection: passed, including opaque detail material assertion
+Changed Python scripts: py_compile passed
+Release archives: CRC, manifests, platform DLLs and cooked payload presence passed
+Crash shader absent from newly cooked SM6 library: AA09756F9A5E65818F0DFB56A83405CB303AF2AB
+Crash shader absent from newly cooked SM6 library: 5903D04B690C87FBFDA140AFCA01AF49AA369117
+SM6 library SHA256: 14b69619c714ef0c8da58236aa8443f1ebc4a6a65f8f1f50e58c4ae962eba92a
+Windows GPU / same-save live load: pending user verification; headless tests cannot establish this.

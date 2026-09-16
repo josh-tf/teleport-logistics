@@ -1,0 +1,21 @@
+Relay 0.4.0 final source and native validation
+
+PASS: 7 transport scenarios, including 60,000 randomized conservation steps
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 30 native classes
+PASS: five stock-scale UV model sources, stable consolidated slots, and 109,276 total triangles
+PASS: ten 3D descriptor captures, five transparent map markers, native-style category/milestone art, and one screen texture
+PASS: thirty-four retained Unreal packages; native factory/decal bindings, one stable LOD, and power-aware screen material configured
+PASS: native belt, pipe, and compact-power geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions
+
+Native editor compilation: succeeded.
+Content inspection: passed all 34 packages, five CDO map texture/material bindings and mast placement.
+Native automation: 4 succeeded; zero failures or skipped tests.
+DesignAndSnapshots emits 25 reconstructed base-game Blueprint event-reply warnings.
+Imported mast cap centroid: (-83.640, +52.500, 298.781) cm; socket (-83.64,+52.5,298.8) cm.
+The editor tests run with NullRHI and do not establish rendered game or multiplayer acceptance.
+
+Windows release pipeline: BUILD SUCCESSFUL; AutomationTool ExitCode=0.
+Steam, Epic and Win64 dedicated-server Shipping modules: compiled successfully.
+Windows and WindowsServer IoStore containers: 34 packages each.
+Packaging duration: 3m25s; native compilation limited to one action.

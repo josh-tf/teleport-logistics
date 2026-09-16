@@ -1,0 +1,57 @@
+{
+  "devices": [
+    {
+      "deviceName": "remote-dev",
+      "instance": "E55ECB64870E44C2B6898D18B04FDA46",
+      "instanceName": "remote-dev-13",
+      "platform": "LinuxEditor",
+      "oSVersion": "Debian GNU/Linux 13 (trixie) 6.12.105+deb13-amd64",
+      "model": "Default",
+      "gPU": "NVIDIA PCI-id: 10de-13b1 (17aa-2230)",
+      "cPUModel": "Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz",
+      "rAMInGB": 31,
+      "renderMode": "SM5",
+      "rHI": "",
+      "appInstanceLog": ""
+    }
+  ],
+  "reportCreatedOn": "2026.09.13-02.43.34",
+  "succeeded": 2,
+  "succeededWithWarnings": 0,
+  "failed": 0,
+  "notRun": 0,
+  "inProcess": 0,
+  "totalDuration": 0.10800004005432129,
+  "comparisonExported": false,
+  "comparisonExportDirectory": "",
+  "tests": [
+    {
+      "testDisplayName": "NativeWidgetLifecycle",
+      "fullTestPath": "Relay.Interaction.NativeWidgetLifecycle",
+      "state": "Success",
+      "deviceInstance": [
+        "E55ECB64870E44C2B6898D18B04FDA46"
+      ],
+      "duration": 0.05558491498231888,
+      "dateTime": "2026.09.13-02.43.34",
+      "entries": [],
+      "warnings": 0,
+      "errors": 0,
+      "artifacts": []
+    },
+    {
+      "testDisplayName": "RejectFactoryWorkerUpdates",
+      "fullTestPath": "Relay.PowerVisual.RejectFactoryWorkerUpdates",
+      "state": "Success",
+      "deviceInstance": [
+        "E55ECB64870E44C2B6898D18B04FDA46"
+      ],
+      "duration": 0.05241512507200241,
+      "dateTime": "2026.09.13-02.43.34",
+      "entries": [],
+      "warnings": 0,
+      "errors": 0,
+      "artifacts": []
+    }
+  ]
+}

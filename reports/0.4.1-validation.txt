@@ -1,0 +1,21 @@
+Relay 0.4.1 model update validation
+
+PASS: 7 transport scenarios, including 60,000 randomized conservation steps
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 30 native classes
+PASS: five stock-scale UV model sources, stable consolidated slots, and 138,402 total triangles
+PASS: ten 3D descriptor captures, five transparent map markers, native-style category/milestone art, and one screen texture
+PASS: thirty-four retained Unreal packages; native factory/decal bindings, one stable LOD, and power-aware screen material configured
+PASS: native belt and pipe geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions
+PASS: all five models select their correct flush-display atlas tiles without edge bleed
+
+Linux editor compilation and fresh asset import: succeeded.
+Content inspection: all 34 retained packages, material-slot bindings and map resources passed.
+Native automation: 4 passed, zero failed/skipped; design test has 25 reconstructed base-game Blueprint event-reply warnings.
+Imported mast top centroid (-83.640,+52.500,298.258) cm is within 1 cm of the unchanged socket.
+Two CPU-rendered review passes inspected.
+Live Windows visual, save, pipe/belt and multiplayer acceptance remain pending.
+
+Windows client/server packaging: BUILD SUCCESSFUL, AutomationTool ExitCode=0.
+Both platform containers contain 34 packages. Package build completed in 1m06s.
+Native compilation and shader compilation were limited to one worker.

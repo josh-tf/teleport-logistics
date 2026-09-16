@@ -1,0 +1,25 @@
+Native editor: Succeeded (relay-052-editor-arrow.log).
+Native automation: 7 passed, 0 failed; one existing test has SDK Blueprint warnings.
+Content inspection: both milestone reward interfaces, costs, icons, LODs and seven Personnel collision boxes passed.
+
+PASS: 7 transport scenarios, including 60,000 randomized conservation steps
+PASS: native source structure, multiplayer RPC validation, use prompt, map support, and hub power visuals; 40 native classes
+PASS: six stock-scale UV model sources, stable consolidated slots, and 150,470 total triangles
+PASS: twelve 3D descriptor captures, five transparent map markers, native-style category/milestone art, and two atlas textures
+PASS: 39 retained Unreal packages; native factory/decal bindings, three authored LODs, and power-aware screen material configured
+PASS: native belt and pipe geometry retained at >92%; component belt/pipe transforms match the model; the hub cable meets the custom mast cap
+PASS: 192 axial rays hit the closed fluid connector rear transitions
+PASS: item housings close both side gaps and rear bulkheads; belt mouths stay open and vent details are seated on their panels
+PASS: all connector emissive faces use connection-controlled signal slots
+PASS: all five models select their correct flush-display atlas tiles without edge bleed
+ItemInput [23370, 12734, 5556]
+ItemOutput [24180, 13180, 5750]
+FluidInput [28088, 15286, 6670]
+FluidOutput [29440, 16040, 6998]
+Hub [28910, 15898, 6937]
+TravelHub [16482, 9062, 3954]
+PASS: three descending LODs, no distant decals, and connector paths clear of simple collision
+
+PASS: offline viewer loads all six actual models; all surface modes, cameras, lamps, markers, keyboard orbit and responsive layout checked; no browser errors.
+
+Final Windows packaging: Steam, Epic and Windows dedicated-server Shipping builds and both platform cooks succeeded; AutomationTool ExitCode=0.
