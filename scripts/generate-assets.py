@@ -1,12 +1,16 @@
 """Generate TeleportLogistics's models, screen texture, and native-style icon family."""
 
 from pathlib import Path
+import sys
 import math
 import os
 import shutil
 import subprocess
 
 from PIL import Image, ImageDraw
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import svg_glyph
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,58 +32,34 @@ def screen_texture():
 
 
 def map_icon(name, fluid=False, output=False, hub=False):
-    """High-resolution grayscale glyph with transparent edges for the map."""
+    """High-resolution map marker: white ring around a coloured direction glyph."""
     scale = 4
     size = 128
     canvas = Image.new("RGBA", (size * scale, size * scale), (0, 0, 0, 0))
     draw = ImageDraw.Draw(canvas)
     white = (238, 243, 245, 255)
     accent = (255, 142, 35, 255) if output else (28, 221, 177, 255)
-    line = 5 * scale
-    draw.ellipse((9 * scale, 9 * scale, 119 * scale, 119 * scale),
-                 outline=white, width=4 * scale)
+    draw.ellipse((9 * scale, 9 * scale, 119 * scale, 119 * scale), outline=white, width=4 * scale)
     if hub:
-        draw.rounded_rectangle((31 * scale, 34 * scale, 97 * scale, 80 * scale),
-                               radius=5 * scale, outline=white, width=line)
-        draw.line((64 * scale, 80 * scale, 64 * scale, 96 * scale), fill=white, width=line)
-        draw.line((45 * scale, 97 * scale, 83 * scale, 97 * scale), fill=white, width=line)
-        for x in (43, 64, 85):
-            draw.ellipse(((x - 5) * scale, 49 * scale, (x + 5) * scale, 59 * scale), fill=accent)
+        glyph = "affiliate"
     elif fluid:
-        points = [(64 * scale, 29 * scale), (39 * scale, 66 * scale),
-                  (42 * scale, 85 * scale), (54 * scale, 96 * scale),
-                  (74 * scale, 96 * scale), (86 * scale, 85 * scale),
-                  (89 * scale, 66 * scale)]
-        draw.polygon(points, fill=white)
+        glyph = "droplet-down" if output else "droplet-up"
     else:
-        draw.rounded_rectangle((34 * scale, 40 * scale, 94 * scale, 88 * scale),
-                               radius=6 * scale, outline=white, width=line)
-    if not hub:
-        # Match the physical displays: up into the symbol, down out of it.
-        tail, tip = (66, 106) if output else (106, 66)
-        neck = tip - (14 if output else -14)
-        points = [(61.5, tail), (61.5, neck), (55, neck), (64, tip),
-                  (73, neck), (66.5, neck), (66.5, tail)]
-        draw.polygon([(x * scale, y * scale) for x, y in points], fill=accent)
+        glyph = "package-export" if output else "package-import"
+    span = 74 * scale
+    svg_glyph.draw(canvas, glyph, accent if not hub else white,
+                   ((size * scale - span) / 2, (size * scale - span) / 2, span), stroke=1.7)
     canvas.resize((size, size), Image.Resampling.LANCZOS).save(ICONS / f"M_Teleporter{name}.png")
 
 
 def category_icon():
-    """Transparent white logistics-network mark matching stock category art."""
+    """Transparent white network mark, matching the stock category art weight."""
     scale = 4
     size = 128
     canvas = Image.new("RGBA", (size * scale, size * scale), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(canvas)
-    white = (245, 247, 248, 255)
-    line = 5 * scale
-    draw.rounded_rectangle((42 * scale, 25 * scale, 86 * scale, 57 * scale),
-                           radius=4 * scale, outline=white, width=line)
-    draw.line((64 * scale, 57 * scale, 64 * scale, 72 * scale), fill=white, width=line)
-    draw.line((27 * scale, 72 * scale, 101 * scale, 72 * scale), fill=white, width=line)
-    for x in (27, 64, 101):
-        draw.line((x * scale, 72 * scale, x * scale, 87 * scale), fill=white, width=line)
-        draw.rounded_rectangle(((x - 10) * scale, 87 * scale, (x + 10) * scale, 106 * scale),
-                               radius=3 * scale, outline=white, width=line)
+    span = 96 * scale
+    svg_glyph.draw(canvas, "affiliate", (245, 247, 248, 255),
+                   ((size * scale - span) / 2, (size * scale - span) / 2, span), stroke=1.7)
     result = canvas.resize((size, size), Image.Resampling.LANCZOS)
     result.save(ICONS / "T_TeleporterCategory_128.png")
     result.save(RESOURCES / "Icon128.png")

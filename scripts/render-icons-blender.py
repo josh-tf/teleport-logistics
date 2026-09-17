@@ -1,7 +1,9 @@
 """Render transparent 512 px building icons from TeleportLogistics's final OBJ models.
 
-Satisfactory building descriptors use model captures rather than flat symbols.
-This script mirrors that pipeline with an orthographic three-point studio setup.
+Satisfactory building descriptors use model captures rather than flat symbols. This
+script mirrors Coffee Stain's documented icon setup: three-point lighting and a
+perspective camera standing in for their CineCameraActor. Depth of field is omitted
+deliberately, since at building scale the whole mesh sits inside the focal depth.
 The 256 px variants are produced with Lanczos resampling by generate-assets.py.
 """
 
@@ -138,6 +140,49 @@ def bounds(objects):
     return low, high
 
 
+LENS = 85.0
+SENSOR = 36.0
+
+
+def camera_distance(target, direction, low, high, framed=None):
+    """Distance at which the mesh just fills the square frame.
+
+    A width-only solve clips the corners once perspective projects the mesh's depth
+    outward, and a bounding-sphere solve wastes most of the frame, so project the
+    eight bounding-box corners and bisect.
+    """
+    half = math.atan(SENSOR / (2 * LENS))
+    if framed is not None:
+        return (framed / 2) / math.tan(half)
+    limit = math.tan(half) * 0.98
+    corners = [Vector((x, y, z))
+               for x in (low.x, high.x) for y in (low.y, high.y) for z in (low.z, high.z)]
+    forward = -direction
+    right = forward.cross(Vector((0, 0, 1))).normalized()
+    up_axis = right.cross(forward).normalized()
+
+    def fits(distance):
+        eye = target + direction * distance
+        for corner in corners:
+            offset = corner - eye
+            depth = offset.dot(forward)
+            if depth <= 1e-6:
+                return False
+            if abs(offset.dot(right) / depth) > limit or abs(offset.dot(up_axis) / depth) > limit:
+                return False
+        return True
+
+    radius = (high - low).length / 2
+    near, far = radius * 0.2, radius / math.sin(half) + radius * 3
+    for _ in range(40):
+        middle = (near + far) / 2
+        if fits(middle):
+            far = middle
+        else:
+            near = middle
+    return far
+
+
 def render(name):
     clear_scene()
     before = set(bpy.context.scene.objects)
@@ -160,19 +205,20 @@ def render(name):
     camera = bpy.data.objects.new("Camera", camera_data)
     bpy.context.collection.objects.link(camera)
     bpy.context.scene.camera = camera
-    camera_data.type = "ORTHO"
-    camera_data.ortho_scale = span * 1.16
+    camera_data.type = "PERSP"
+    camera_data.lens = LENS
+    camera_data.sensor_width = SENSOR
     target = centre + Vector((0, 0, extent.z * 0.015))
     if name == "TravelHub":
         target = Vector((-0.1, 0, 2.1))
-        camera_data.ortho_scale = 8.4
+    framed = None
     if os.environ.get("TELEPORTLOGISTICS_RENDER_TARGET"):
         # Metres in model space, for reviewing small mounted details at full resolution.
         target = Vector(tuple(float(v) for v in os.environ["TELEPORTLOGISTICS_RENDER_TARGET"].split(",")))
-        camera_data.ortho_scale = float(os.environ.get("TELEPORTLOGISTICS_RENDER_SCALE", "1.2"))
+        framed = float(os.environ.get("TELEPORTLOGISTICS_RENDER_SCALE", "1.2"))
     direction = Vector(tuple(float(value) for value in os.environ.get(
-        "TELEPORTLOGISTICS_RENDER_DIRECTION", "1.55,-1.75,1.22").split(","))).normalized()
-    camera.location = target + direction * span * 2.8
+        "TELEPORTLOGISTICS_RENDER_DIRECTION", "1.30,-1.50,2.05").split(","))).normalized()
+    camera.location = target + direction * camera_distance(target, direction, low, high, framed)
     look_at(camera, target)
 
     add_area("Key", centre + Vector((-span, -span * 1.2, span * 1.9)),

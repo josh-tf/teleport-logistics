@@ -60,6 +60,20 @@ That script shells out to Blender twice, for `generate-models-blender.py` and `r
 | `TELEPORTLOGISTICS_ICON_CPU` | Force CPU rendering when no GPU device is usable. |
 | `TELEPORTLOGISTICS_SECONDARY_PAINT` | Secondary paint colour, `r,g,b`. Defaults to the graphite baked into every shipped icon. |
 
+`scripts/svg_glyph.py` renders the vendored Tabler glyphs with Pillow: it samples SVG path data into
+polylines and strokes them, because no SVG rasteriser is installed and adding one would put a native
+dependency in the asset pipeline. Curves sample at twelve steps per segment, since Pillow stamps a
+pixel-rounded circle at every vertex of a joined polyline and a denser curve beads visibly. Callers draw at a
+multiple of the target size and downsample. `generate-screen-atlas.py`, `generate-ui-symbols.py` and the map
+and category icons in `generate-assets.py` all go through it, so the glyph language stays consistent from the
+build menu to the map to the screens on the models.
+
+Descriptor captures come from `render-icons-blender.py`, which follows Coffee Stain's documented icon setup:
+three-point lighting and a perspective camera standing in for their CineCameraActor, at 85 mm on a 36 mm
+sensor. The distance is solved by projecting the mesh's eight bounding-box corners and bisecting until they
+just fill the frame; a width-only solve clips the corners and a bounding-sphere solve wastes the frame. Depth
+of field is deliberately omitted, since at building scale the whole mesh sits inside the focal depth.
+
 `scripts/generate-detail-atlas.py` letters the six in-world identification plates. It is run by hand rather than
 from `generate-assets.py`, because relettering changes the plates on every placed building. It picks the largest
 type size whose widest label clears a 20 px margin inside each 512 px tile, so a longer label shrinks the
