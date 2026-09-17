@@ -1,4 +1,5 @@
 #include "TeleportLogisticsBuilding.h"
+#include "UObject/ConstructorHelpers.h"
 #include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
 #include "TeleportLogisticsRemoteCall.h"
@@ -148,17 +149,21 @@ void ATeleportLogisticsBuilding::OnUse_Implementation(AFGCharacterPlayer *Player
 }
 FString ATeleportLogisticsBuilding::LookAtDetail() const
 {
-    return Label;
+    // BeginPlay seeds Label from mDisplayName, which the panel header already
+    // shows. Only a name the player actually chose is worth a line of its own.
+    return Label == mDisplayName.ToString() ? FString() : Label;
 }
 FText ATeleportLogisticsBuilding::GetLookAtDecription_Implementation(AFGCharacterPlayer *Player,
                                                          const FUseState &State) const
 {
-    // The stock implementation injects the player's currently bound Use key.
+    // The stock implementation injects the player's currently bound Use key as an
+    // inline widget. That run only lays out correctly at the start of the block, so
+    // our own lines follow it rather than precede it.
     const FText Prompt = Super::GetLookAtDecription_Implementation(Player, State);
     const FString Detail = LookAtDetail();
     if (Detail.IsEmpty())
         return Prompt;
-    return FText::FromString(Detail + LINE_TERMINATOR + Prompt.ToString());
+    return FText::FromString(Prompt.ToString() + TEXT("\n") + Detail);
 }
 
 ATeleportLogisticsEndpoint::ATeleportLogisticsEndpoint()
@@ -189,15 +194,24 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     Belt->SetForwardPeekAndGrabToBuildable(true);
     // Fade the last 30cm of visible belt travel before the connection consumes
     // an item. Purely visual; never participates in collision or transport.
-    // Use the game's own fog volume, which already carries the InputFog material on
-    // slot 0. /Engine/BasicShapes is editor-only template content: a hardcoded
-    // LoadObject path is invisible to the cooker, so it never entered the mod pak and
-    // the shipped game does not carry it either. The component therefore drew nothing
-    // in game while looking correct in the editor, where engine content is present.
+    // Both the mesh and its material belong to the base game. FObjectFinder is the
+    // constructor-time loader: it resolves against mounted content the way the engine
+    // expects during CDO construction, where a bare LoadObject can return null. The
+    // material is bound explicitly rather than trusted to arrive on the mesh's slot 0.
     auto *Fog = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InputFog"));
     Fog->SetupAttachment(RootComponent);
-    Fog->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/FactoryGame/Buildable/-Shared/Material/InputFogPlane.InputFogPlane")));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> FogMesh(
+        TEXT("/Game/FactoryGame/Buildable/-Shared/Material/InputFogPlane.InputFogPlane"));
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> FogMaterial(
+        TEXT("/Game/FactoryGame/Buildable/-Shared/Material/InputFog.InputFog"));
+    if (FogMesh.Succeeded())
+        Fog->SetStaticMesh(FogMesh.Object);
+    else
+        UE_LOG(LogTeleportLogistics, Error, TEXT("TeleportLogistics: InputFogPlane mesh unavailable"));
+    if (FogMaterial.Succeeded())
+        Fog->SetMaterial(0, FogMaterial.Object);
+    else
+        UE_LOG(LogTeleportLogistics, Error, TEXT("TeleportLogistics: InputFog material unavailable"));
     Fog->SetRelativeLocation(FVector(190, 0, 140));
     // The game's mesh is a 256 cm volume centred on its origin, not the engine's
     // 100 cm flat quad, so it needs no upright rotation and a smaller scale.
@@ -256,28 +270,28 @@ void ATeleportLogisticsEndpoint::FluidPort(bool IsInput)
 ATeleportLogisticsItemInput::ATeleportLogisticsItemInput()
 {
     ItemPort(true);
-    mDisplayName = NSLOCTEXT("TeleportLogistics", "ItemInput", "Item Teleporter (Input)");
+    mDisplayName = NSLOCTEXT("TeleportLogistics", "ItemInput", "Item (In)");
     mDescription =
         NSLOCTEXT("TeleportLogistics", "ItemInputDescription", "Accepts any conveyor item into a named teleporter route.");
 }
 ATeleportLogisticsItemOutput::ATeleportLogisticsItemOutput()
 {
     ItemPort(false);
-    mDisplayName = NSLOCTEXT("TeleportLogistics", "ItemOutput", "Item Teleporter (Output)");
+    mDisplayName = NSLOCTEXT("TeleportLogistics", "ItemOutput", "Item (Out)");
     mDescription = NSLOCTEXT("TeleportLogistics", "ItemOutputDescription",
                              "Outputs items received by every input on the same route.");
 }
 ATeleportLogisticsFluidInput::ATeleportLogisticsFluidInput()
 {
     FluidPort(true);
-    mDisplayName = NSLOCTEXT("TeleportLogistics", "FluidInput", "Fluid Teleporter (Input)");
+    mDisplayName = NSLOCTEXT("TeleportLogistics", "FluidInput", "Fluid (In)");
     mDescription =
         NSLOCTEXT("TeleportLogistics", "FluidInputDescription", "Accepts pipe contents into a type-safe fluid route.");
 }
 ATeleportLogisticsFluidOutput::ATeleportLogisticsFluidOutput()
 {
     FluidPort(false);
-    mDisplayName = NSLOCTEXT("TeleportLogistics", "FluidOutput", "Fluid Teleporter (Output)");
+    mDisplayName = NSLOCTEXT("TeleportLogistics", "FluidOutput", "Fluid (Out)");
     mDescription = NSLOCTEXT("TeleportLogistics", "FluidOutputDescription",
                              "Supplies fluid received by every input on the same route.");
 }
@@ -328,11 +342,11 @@ int32 ATeleportLogisticsEndpoint::Buffered() const
 }
 FString ATeleportLogisticsEndpoint::LookAtDetail() const
 {
-    FString Detail = Label.IsEmpty() ? FString() : Label;
+    FString Detail = Super::LookAtDetail();
     if (!UTeleportLogisticsConfig::ShowRouteInLookAt(this))
         return Detail;
     if (!Detail.IsEmpty())
-        Detail += LINE_TERMINATOR;
+        Detail += TEXT("\n");
     Detail += TEXT("Route: ") + (RoutePath.IsEmpty() ? FString(TEXT("unassigned")) : RoutePath);
     if (!Enabled)
         Detail += TEXT(" (disabled)");
