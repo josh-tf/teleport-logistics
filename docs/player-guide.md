@@ -18,6 +18,18 @@ Unlock Tier 9, place two Personnel Teleporters, and power each with 50 MW. Press
 
 Unpowered, busy or dismantled destinations cannot accept a journey. Blocked landing areas are rejected. You cannot initiate travel while dead, driving a vehicle or already in a portal. Both hubs are reserved for 30 seconds. The native portal state machine handles the journey and destination streaming; on arrival the mod aligns your view with the exit.
 
+
+## Emptying an endpoint
+
+An endpoint holding cargo will not change route, so each one offers a way to empty its local buffer.
+
+- **Item endpoints** show **Take buffered items**, which moves the buffer into your inventory. Anything that
+  does not fit stays in the endpoint, so nothing is destroyed.
+- **Fluid endpoints** show **Flush local buffer**, which discards the fluid. Disable the endpoint first. The
+  attached pipes are untouched.
+
+The row beside each button states why it is unavailable: nothing buffered, or the endpoint still enabled.
+
 ## Troubleshooting
 
 | Symptom | Check |

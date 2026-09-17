@@ -14,6 +14,13 @@ class ATeleportLogisticsHub;
 // sides must name the same constant rather than repeat the prose.
 namespace TeleportLogisticsResult
 {
+inline const TCHAR *BufferBusy = TEXT("The endpoint is transferring. Try again.");
+inline const TCHAR *BufferEmpty = TEXT("This endpoint is empty.");
+inline const TCHAR *BufferCollected = TEXT("Buffered items moved to your inventory.");
+inline const TCHAR *BufferPartlyCollected = TEXT("Your inventory filled up. Some items are still buffered.");
+inline const TCHAR *BufferNotItems = TEXT("Only item endpoints can be emptied by hand.");
+inline const TCHAR *FlushedFluid = TEXT("Local fluid buffer flushed. Attached pipes are unchanged.");
+inline const TCHAR *FlushBlockedFluid = TEXT("Disable the fluid endpoint before flushing its local buffer.");
 inline const TCHAR *EndpointSaved = TEXT("Endpoint saved.");
 inline const TCHAR *HubRenamed = TEXT("Hub renamed. Connections are unchanged.");
 inline const TCHAR *RoutePaused = TEXT("Route paused; output buffers can drain.");

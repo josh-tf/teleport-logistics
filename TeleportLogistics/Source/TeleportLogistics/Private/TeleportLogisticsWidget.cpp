@@ -64,6 +64,12 @@ TSharedRef<STextBlock> Text(const FString &Value, float Size = 15, FLinearColor 
         .ColorAndOpacity(Color)
         .AutoWrapText(true);
 }
+TSharedRef<SWidget> Sized(const TSharedRef<SWidget> &Button, float Width = 186)
+{
+    // Both action rows use one width so the column reads as a pair, not a stack of
+    // differently sized buttons.
+    return SNew(SBox).MinDesiredWidth(Width).HAlign(HAlign_Fill)[Button];
+}
 TSharedRef<STextBlock> Live(TFunction<FString()> Value, float Size = 15, FLinearColor Color = TextPrimary,
                             bool Bold = false)
 {
@@ -470,15 +476,38 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::BuildEndpoint()
     Toggle->AddSlot().FillWidth(1).VAlign(VAlign_Center)[Live([this] {
         return !Data.ContextAvailable ? TEXT("Connecting…") : Data.EndpointEnabled ? TEXT("Enabled") : TEXT("Standby");
     }, 14)];
-    Toggle->AddSlot().AutoWidth()[Action(TEXT("Enable / standby"), [this] {
+    Toggle->AddSlot().AutoWidth().VAlign(VAlign_Center)[Sized(Action(TEXT("Enable / standby"), [this] {
         BeginAction(TEXT("toggle")); return FReply::Handled();
-    }, [this] { return CanAct(); }, false, TEXT("Contents are retained while disabled."))];
+    }, [this] { return CanAct(); }, false, TEXT("Contents are retained while disabled.")))];
     Right->AddSlot().AutoHeight()[Toggle];
-    if (Fluid)
-        Right->AddSlot().AutoHeight().Padding(0, 8, 0, 0)[Action(TEXT("Flush local buffer"), [this] {
-            ConfirmAction(TEXT("flush")); return FReply::Handled();
-        }, [this] { return CanAct() && !Data.EndpointEnabled && Data.Buffered > 0; }, false,
-            TEXT("Disable the endpoint first."))];
+    // Second row mirrors the toggle row so both buttons share a width, and the left
+    // cell states why the action is unavailable instead of hiding it in a tooltip.
+    auto Empty = SNew(SHorizontalBox);
+    Empty->AddSlot().FillWidth(1).VAlign(VAlign_Center)[SNew(STextBlock)
+        .Font(Font(14))
+        .Text_Lambda([this, Fluid] {
+            if (!Data.ContextAvailable)
+                return FText::FromString(TEXT("Connecting…"));
+            if (Data.Buffered <= 0)
+                return FText::FromString(TEXT("Nothing buffered"));
+            if (Fluid && Data.EndpointEnabled)
+                return FText::FromString(TEXT("Disable to flush"));
+            return FText::FromString(Fluid ? TEXT("Discards the fluid") : TEXT("Moves items to you"));
+        })
+        .ColorAndOpacity_Lambda([this, Fluid] {
+            const bool Blocked = Fluid && Data.EndpointEnabled && Data.Buffered > 0;
+            return FSlateColor(Blocked ? Warning : TextMuted);
+        })];
+    Empty->AddSlot().AutoWidth().VAlign(VAlign_Center)[Sized(Fluid
+        ? Action(TEXT("Flush local buffer"), [this] {
+              ConfirmAction(TEXT("flush")); return FReply::Handled();
+          }, [this] { return CanAct() && !Data.EndpointEnabled && Data.Buffered > 0; }, false,
+              TEXT("Disable the endpoint first. The fluid is destroyed."))
+        : Action(TEXT("Take buffered items"), [this] {
+              BeginAction(TEXT("take")); return FReply::Handled();
+          }, [this] { return CanAct() && Data.Buffered > 0; }, false,
+              TEXT("Moves the buffer into your inventory. Whatever does not fit stays here.")))];
+    Right->AddSlot().AutoHeight().Padding(0, 8, 0, 0)[Empty];
     Right->AddSlot().FillHeight(1)[SNullWidget::NullWidget];
     return SNew(SHorizontalBox) + SHorizontalBox::Slot().FillWidth(1.08f).Padding(0, 0, 8, 0)[Plate(Left)] +
         SHorizontalBox::Slot().FillWidth(1)[Plate(Right)];
@@ -687,6 +716,8 @@ void UTeleportLogisticsWidget::BeginAction(const FString &ActionName)
             Remote->ServerToggle(Endpoint);
         else if (ActionName == TEXT("flush"))
             Remote->ServerFlushFluid(Endpoint);
+        else if (ActionName == TEXT("take"))
+            Remote->ServerTakeBuffer(Endpoint);
     }
     Confirmation.Empty();
     UpdateConfirmation();

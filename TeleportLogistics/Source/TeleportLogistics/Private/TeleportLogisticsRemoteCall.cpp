@@ -157,11 +157,60 @@ void UTeleportLogisticsRemoteCall::ServerFlushFluid_Implementation(ATeleportLogi
     FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
     if (E->Medium != ETeleportLogisticsMedium::Fluid || E->Enabled || E->IoInFlight)
     {
-        Result(E, TEXT("Disable the fluid endpoint before flushing its local buffer."), false);
+        Result(E, TeleportLogisticsResult::FlushBlockedFluid, false);
         return;
     }
     E->Cargo.Reset();
-    Result(E, TEXT("Local fluid buffer flushed. Attached pipes are unchanged."), true);
+    Result(E, TeleportLogisticsResult::FlushedFluid, true);
+}
+bool UTeleportLogisticsRemoteCall::ServerTakeBuffer_Validate(ATeleportLogisticsEndpoint *)
+{
+    return true;
+}
+void UTeleportLogisticsRemoteCall::ServerTakeBuffer_Implementation(ATeleportLogisticsEndpoint *E)
+{
+    if (!RateLimit(true) || !ValidateContext(E))
+        return;
+    auto *Player = GetOwnerPlayerCharacter();
+    if (!Player)
+        if (const auto *Controller = GetOwnerPlayerController())
+            Player = Cast<AFGCharacterPlayer>(Controller->GetPawn());
+    auto *Inventory = Player ? Player->GetInventory() : nullptr;
+    if (!Inventory)
+        return;
+    FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
+    if (E->Medium != ETeleportLogisticsMedium::Items)
+    {
+        Result(E, TeleportLogisticsResult::BufferNotItems, false);
+        return;
+    }
+    if (E->IoInFlight)
+    {
+        Result(E, TeleportLogisticsResult::BufferBusy, false);
+        return;
+    }
+    if (E->Cargo.IsEmpty())
+    {
+        Result(E, TeleportLogisticsResult::BufferEmpty, false);
+        return;
+    }
+    // Move what fits and keep the remainder buffered, so a full inventory never
+    // destroys items. The mutex makes this atomic against the transport tick.
+    TArray<FInventoryStack> Remaining;
+    for (const FInventoryStack &Stack : E->Cargo)
+    {
+        const int32 Added = Inventory->AddStack(Stack, true);
+        if (Added < Stack.NumItems)
+        {
+            FInventoryStack Leftover = Stack;
+            Leftover.NumItems = Stack.NumItems - FMath::Max(Added, 0);
+            Remaining.Add(Leftover);
+        }
+    }
+    const bool Complete = Remaining.IsEmpty();
+    E->Cargo = MoveTemp(Remaining);
+    Result(E, Complete ? TeleportLogisticsResult::BufferCollected
+                       : TeleportLogisticsResult::BufferPartlyCollected, true);
 }
 bool UTeleportLogisticsRemoteCall::ServerRenameHub_Validate(ATeleportLogisticsHub *, const FString &Name)
 {

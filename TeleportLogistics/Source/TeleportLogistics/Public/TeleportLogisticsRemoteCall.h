@@ -28,6 +28,8 @@ class TELEPORTLOGISTICS_API UTeleportLogisticsRemoteCall : public UFGRemoteCallO
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerFlushFluid(ATeleportLogisticsEndpoint *Endpoint);
     UFUNCTION(Server, Reliable, WithValidation)
+    void ServerTakeBuffer(ATeleportLogisticsEndpoint *Endpoint);
+    UFUNCTION(Server, Reliable, WithValidation)
     void ServerRenameHub(ATeleportLogisticsHub *Hub, const FString &Name);
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerControl(ATeleportLogisticsHub *Hub, FGuid Route, const FString &Action, const FString &Name);

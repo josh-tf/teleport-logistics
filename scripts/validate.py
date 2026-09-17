@@ -80,8 +80,8 @@ assert "T_TeleporterMilestone_512" in content_source
 assert content_source.count("_256.T_Teleporter") >= 6
 assert content_source.count("_512.T_Teleporter") >= 6
 assert "RemoteCallObjects.Add(UTeleportLogisticsRemoteCall::StaticClass())" in content_source
-assert remote_header.count("UFUNCTION(Server, Reliable, WithValidation)") == 7
-assert remote_source.count("_Validate(") == 7
+assert remote_header.count("UFUNCTION(Server, Reliable, WithValidation)") == 8
+assert remote_source.count("_Validate(") == 8
 assert "FGuid Context;" in types_header and "uint32 RequestId = 0;" in types_header
 assert "Snapshot.Context != Context->TeleporterId" in widget_source
 assert "Snapshot.RequestId <= LastReceivedRequestId" in widget_source
