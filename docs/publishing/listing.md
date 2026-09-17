@@ -105,6 +105,8 @@ This is a pre-1.0 candidate. Final retail-game multiplayer, progression and save
 
 [Multiplayer and dedicated servers](https://github.com/josh-tf/teleport-logistics/wiki/Multiplayer-and-Dedicated-Servers) · [Known limitations and FAQ](https://github.com/josh-tf/teleport-logistics/wiki/FAQ)
 
+Found a problem? [Open a GitHub issue](https://github.com/josh-tf/teleport-logistics/issues).
+
 ## Links
 
 - [Full documentation](https://github.com/josh-tf/teleport-logistics/wiki)

@@ -16,7 +16,7 @@ Prepared for review, not uploaded. Read the [release audit](../../reports/0.5.10
 | Suggested searchable terms | teleport, teleporter, logistics, routes, network, portal, items, fluids, transport |
 | Upload archive | `dist/TeleportLogistics-0.5.10.zip`, combined Windows client/server, built and listed in `dist/SHA256SUMS` |
 | Dependency | SML `^3.12.0`; game build `>=502094` in manifest |
-| Author / support contact | Pending owner input; do not invent a public identity or URL |
+| Author / support contact | Support via GitHub issues: `https://github.com/josh-tf/teleport-logistics/issues` |
 | Source URL / code license | `https://github.com/josh-tf/teleport-logistics`, repository created and **not yet pushed**. Code license MIT |
 | Wiki | `https://github.com/josh-tf/teleport-logistics/wiki`, linked from the description. Pages must exist before the listing goes live |
 

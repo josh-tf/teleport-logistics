@@ -1,4 +1,5 @@
 #include "TeleportLogisticsBuilding.h"
+#include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
 #include "TeleportLogisticsRemoteCall.h"
 #include "FGPlayerController.h"
@@ -327,7 +328,11 @@ int32 ATeleportLogisticsEndpoint::Buffered() const
 }
 FString ATeleportLogisticsEndpoint::LookAtDetail() const
 {
-    FString Detail = Label.IsEmpty() ? FString() : Label + LINE_TERMINATOR;
+    FString Detail = Label.IsEmpty() ? FString() : Label;
+    if (!UTeleportLogisticsConfig::ShowRouteInLookAt(this))
+        return Detail;
+    if (!Detail.IsEmpty())
+        Detail += LINE_TERMINATOR;
     Detail += TEXT("Route: ") + (RoutePath.IsEmpty() ? FString(TEXT("unassigned")) : RoutePath);
     if (!Enabled)
         Detail += TEXT(" (disabled)");

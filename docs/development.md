@@ -60,6 +60,13 @@ That script shells out to Blender twice, for `generate-models-blender.py` and `r
 | `TELEPORTLOGISTICS_ICON_CPU` | Force CPU rendering when no GPU device is usable. |
 | `TELEPORTLOGISTICS_SECONDARY_PAINT` | Secondary paint colour, `r,g,b`. Defaults to the graphite baked into every shipped icon. |
 
+`TeleportLogisticsSettings.h` declares the SML mod configuration as a C++ `UModConfiguration` subclass, so it
+needs no editor-authored asset; `UTeleportLogisticsGameInstanceModule` registers it through
+`ModConfigurations` and values are read back through `UConfigManager::GetConfigurationRootSection`. Only
+client-local preferences belong there. SML writes configuration per client, so a gameplay number exposed this
+way would let a client disagree with its host, and map-marker visibility cannot work either because
+representations are created under `HasAuthority`.
+
 `scripts/svg_glyph.py` renders the vendored Tabler glyphs with Pillow: it samples SVG path data into
 polylines and strokes them, because no SVG rasteriser is installed and adding one would put a native
 dependency in the asset pipeline. Curves sample at twelve steps per segment, since Pillow stamps a

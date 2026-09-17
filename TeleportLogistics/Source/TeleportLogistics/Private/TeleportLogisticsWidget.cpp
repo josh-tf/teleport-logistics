@@ -1,4 +1,5 @@
 #include "TeleportLogisticsWidget.h"
+#include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
 #include "TeleportLogisticsBuilding.h"
 #include "TeleportLogisticsRemoteCall.h"
@@ -196,7 +197,8 @@ void UTeleportLogisticsWidget::InitializeInteraction()
             ContentRoot->SetContent(BuildPanel());
     }
     if (GetWorld())
-        GetWorld()->GetTimerManager().SetTimer(RefreshTimer, this, &UTeleportLogisticsWidget::Refresh, 0.35f, true, 0.01f);
+        GetWorld()->GetTimerManager().SetTimer(RefreshTimer, this, &UTeleportLogisticsWidget::Refresh,
+                                               UTeleportLogisticsConfig::RefreshSeconds(this), true, 0.01f);
 }
 TSharedRef<SWidget> UTeleportLogisticsWidget::RebuildWidget()
 {
@@ -500,7 +502,11 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::BuildEndpoint()
         })];
     Empty->AddSlot().AutoWidth().VAlign(VAlign_Center)[Sized(Fluid
         ? Action(TEXT("Flush local buffer"), [this] {
-              ConfirmAction(TEXT("flush")); return FReply::Handled();
+              if (UTeleportLogisticsConfig::ConfirmFluidFlush(this))
+                ConfirmAction(TEXT("flush"));
+            else
+                BeginAction(TEXT("flush"));
+            return FReply::Handled();
           }, [this] { return CanAct() && !Data.EndpointEnabled && Data.Buffered > 0; }, false,
               TEXT("Disable the endpoint first. The fluid is destroyed."))
         : Action(TEXT("Take buffered items"), [this] {

@@ -1,4 +1,5 @@
 #include "TeleportLogisticsContent.h"
+#include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
 #include "TeleportLogisticsTravel.h"
 #include "TeleportLogisticsBuilding.h"
@@ -169,6 +170,7 @@ UTeleportLogisticsGameInstanceModule::UTeleportLogisticsGameInstanceModule()
     // RCOs, including controllers for late-joining multiplayer clients.
     RemoteCallObjects.Add(UTeleportLogisticsRemoteCall::StaticClass());
     RemoteCallObjects.Add(UTeleportLogisticsTravelRemote::StaticClass());
+    ModConfigurations.Add(UTeleportLogisticsConfig::StaticClass());
 }
 UTeleportLogisticsWorldModule::UTeleportLogisticsWorldModule()
 {

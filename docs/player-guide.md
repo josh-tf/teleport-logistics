@@ -43,3 +43,14 @@ The row beside each button states why it is unavailable: nothing buffered, or th
 | Milestone costs absent | Test in a normal progression save; Creative Mode can hide costs. |
 
 For a bug report, include the mod version, game build, other mods, save/new-world reproduction, singleplayer/listen/dedicated mode, exact steps, and screenshots. For a crash, include `FactoryGame.log` and `CrashContext.runtime-xml`; include server and client logs for multiplayer issues. Support contact will be listed on the published mod page.
+
+## Settings
+
+Pause menu, Mods, Teleport Logistics. These are your own preferences and never change transport rates, power
+draw or travel timings.
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| Window refresh interval | 0.35 s | How often an open window refreshes. Raise it on a large network if the interface costs you frames. |
+| Show route when looking at a building | On | Names the channel and route in the look-at panel. |
+| Confirm before flushing fluid | On | Asks before discarding a fluid buffer. Taking items back is never destructive, so it is never confirmed. |
