@@ -188,14 +188,19 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     Belt->SetForwardPeekAndGrabToBuildable(true);
     // Fade the last 30cm of visible belt travel before the connection consumes
     // an item. Purely visual; never participates in collision or transport.
+    // Use the game's own fog volume, which already carries the InputFog material on
+    // slot 0. /Engine/BasicShapes is editor-only template content: a hardcoded
+    // LoadObject path is invisible to the cooker, so it never entered the mod pak and
+    // the shipped game does not carry it either. The component therefore drew nothing
+    // in game while looking correct in the editor, where engine content is present.
     auto *Fog = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InputFog"));
     Fog->SetupAttachment(RootComponent);
-    Fog->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")));
-    Fog->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr,
-        TEXT("/Game/FactoryGame/Buildable/-Shared/Material/InputFog.InputFog")));
+    Fog->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,
+        TEXT("/Game/FactoryGame/Buildable/-Shared/Material/InputFogPlane.InputFogPlane")));
     Fog->SetRelativeLocation(FVector(190, 0, 140));
-    Fog->SetRelativeRotation(FRotator(90, 0, 0));
-    Fog->SetRelativeScale3D(FVector(1.5, 1.35, 1));
+    // The game's mesh is a 256 cm volume centred on its origin, not the engine's
+    // 100 cm flat quad, so it needs no upright rotation and a smaller scale.
+    Fog->SetRelativeScale3D(FVector(0.59, 0.53, 0.59));
     Fog->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Fog->SetGenerateOverlapEvents(false);
     Fog->SetCastShadow(false);
