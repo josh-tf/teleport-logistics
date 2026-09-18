@@ -212,10 +212,15 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
         Fog->SetMaterial(0, FogMaterial.Object);
     else
         UE_LOG(LogTeleportLogistics, Error, TEXT("TeleportLogistics: InputFog material unavailable"));
-    Fog->SetRelativeLocation(FVector(190, 0, 140));
-    // The game's mesh is a 256 cm volume centred on its origin, not the engine's
-    // 100 cm flat quad, so it needs no upright rotation and a smaller scale.
-    Fog->SetRelativeScale3D(FVector(0.59, 0.53, 0.59));
+    // The quad lies in its own XZ plane, so without a yaw it faces along Y and the
+    // player looking into the connector sees it edge-on as a sliver. Yaw turns its
+    // normal onto the belt axis; local X then reads as width and local Z as height.
+    // The aperture is roughly 192 cm across, centred on z = 190 in the 285.9 x 322.9
+    // envelope, and the mesh's own extent is not readable offline, so the scale is
+    // tuned against that opening rather than derived.
+    Fog->SetRelativeLocation(FVector(190, 0, 190));
+    Fog->SetRelativeRotation(FRotator(0, 90, 0));
+    Fog->SetRelativeScale3D(FVector(0.72, 0.53, 0.68));
     Fog->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Fog->SetGenerateOverlapEvents(false);
     Fog->SetCastShadow(false);
