@@ -241,7 +241,7 @@ require(unreal.FGSchematic.get_tech_tier(logistics) == 5, "Logistics must remain
 require(amounts(unreal.FGSchematic.get_cost(logistics)) == {
     "Desc_CircuitBoard_C": 100, "Desc_IronPlateReinforced_C": 100, "Desc_Cable_C": 200}, "Logistics unlock costs differ")
 require(amounts(unreal.FGSchematic.get_cost(travel)) == {
-    "Desc_QuantumCrystal_C": 200, "Desc_ComputerSuper_C": 100, "Desc_MotorLightweight_C": 50}, "Personnel unlock costs differ")
+    "Desc_TimeCrystal_C": 200, "Desc_ComputerSuper_C": 100, "Desc_MotorLightweight_C": 50}, "Personnel unlock costs differ")
 for kind in ("ItemInput", "ItemOutput", "FluidInput", "FluidOutput", "Hub", "Travel"):
     recipe = unreal.load_class(None, "/Script/TeleportLogistics.TeleportLogistics" + kind + "Recipe")
     product = unreal.FGRecipe.get_products(recipe)
@@ -254,7 +254,7 @@ for kind in ("ItemInput", "ItemOutput", "FluidInput", "FluidOutput", "Hub", "Tra
     require(unreal.get_default_object(building).get_editor_property("mHologramClass") is not None, kind + " lacks a hologram")
     expected = {"Desc_IronPlateReinforced_C": 4, "Desc_CircuitBoard_C": 4, "Desc_Cable_C": 10}
     if kind == "Hub": expected["Desc_Computer_C"] = 5
-    if kind == "Travel": expected = {"Desc_QuantumCrystal_C": 20, "Desc_ComputerSuper_C": 10, "Desc_MotorLightweight_C": 5}
+    if kind == "Travel": expected = {"Desc_TimeCrystal_C": 20, "Desc_ComputerSuper_C": 10, "Desc_MotorLightweight_C": 5}
     require(amounts(unreal.FGRecipe.get_ingredients(None, recipe)) == expected, kind + " construction costs differ")
 unreal.log("Research contract passed: exact tiers, cost resources, quantities, products, building classes and holograms.")
 

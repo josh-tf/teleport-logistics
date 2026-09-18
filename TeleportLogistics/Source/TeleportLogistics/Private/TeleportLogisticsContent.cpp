@@ -196,8 +196,7 @@ UTeleportLogisticsTravelRecipe::UTeleportLogisticsTravelRecipe()
 {
     mIngredients.Empty();
     mIngredients.Add(FItemAmount(
-        Part(TEXT(
-            "/Game/FactoryGame/Resource/Parts/QuantumCrystal/Desc_QuantumCrystal.Desc_QuantumCrystal_C")),
+        Part(TEXT("/Game/FactoryGame/Resource/Parts/TimeCrystal/Desc_TimeCrystal.Desc_TimeCrystal_C")),
         20));
     mIngredients.Add(FItemAmount(
         Part(TEXT("/Game/FactoryGame/Resource/Parts/ComputerSuper/Desc_ComputerSuper.Desc_ComputerSuper_C")),
@@ -228,9 +227,10 @@ UTeleportLogisticsTravelMilestone::UTeleportLogisticsTravelMilestone()
             nullptr, TEXT("/TeleportLogistics/Icons/T_TeleporterPersonnelMilestone_512.T_TeleporterPersonnelMilestone_512"),
             nullptr, LOAD_NoWarn))
         mSchematicIcon = FSlateImageBrush(I, FVector2D(512));
+    // Quantum Crystal is discontinued in game and its tooltip points at Time
+    // Crystal, which the README and the mod page already named.
     mCost.Add(FItemAmount(
-        Part(TEXT(
-            "/Game/FactoryGame/Resource/Parts/QuantumCrystal/Desc_QuantumCrystal.Desc_QuantumCrystal_C")),
+        Part(TEXT("/Game/FactoryGame/Resource/Parts/TimeCrystal/Desc_TimeCrystal.Desc_TimeCrystal_C")),
         200));
     mCost.Add(FItemAmount(
         Part(TEXT("/Game/FactoryGame/Resource/Parts/ComputerSuper/Desc_ComputerSuper.Desc_ComputerSuper_C")),
