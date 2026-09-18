@@ -62,7 +62,9 @@ ATLAS_RECTS = {
     # bare. Point them at the same cell the plate bezels use, which is the one
     # that reads as metal in the stock assets. Kept as its own key so the two
     # can diverge again without touching 41 call sites.
-    "shell": (0.012, 0.012, 0.322, 0.322),              # Chrome, was Composite Color
+    # Body panels: Chrome is the bright trim cell and tiles visibly across a large
+    # panel when you stand back. Grey Rough Metal is the cell meant for bodies.
+    "shell": (0.345, 0.345, 0.655, 0.655),              # Grey Rough Metal
     "steel": (0.012, 0.012, 0.322, 0.322),              # Chrome
     "frame": (0.345, 0.012, 0.655, 0.322),              # Dark Steel
     "rubber": (0.678, 0.678, 0.988, 0.988),             # Dark Rubber/Plastic

@@ -99,9 +99,10 @@ def expression(material, cls, x, y, **properties):
     return node
 
 
-# Stock MI_Factory2D_01 tiles the shared surface detail at 20. Sixteen reads about
-# a fifth larger, which is the "slightly scaled up" wear this mod wants.
-FACTORY_DETAIL_SCALE = 16.0
+# Tiling of the shared surface detail. Stock MI_Factory2D_01 uses 20; sitting on
+# the stock value keeps our panels tiling exactly like every other building, which
+# matters most on the large flat bodies. This is the knob for wear size.
+FACTORY_DETAIL_SCALE = 20.0
 
 
 def build_screen_material():
