@@ -99,6 +99,11 @@ def expression(material, cls, x, y, **properties):
     return node
 
 
+# Stock MI_Factory2D_01 tiles the shared surface detail at 20. Sixteen reads about
+# a fifth larger, which is the "slightly scaled up" wear this mod wants.
+FACTORY_DETAIL_SCALE = 16.0
+
+
 def build_screen_material():
     path = "/TeleportLogistics/Models/M_TeleporterScreen"
     material = None
@@ -152,9 +157,38 @@ def build_screen_material():
     return material
 
 
+def build_factory_material():
+    """Our own instance of the stock factory material, so surface tiling can differ.
+
+    MI_Factory_Base_01 is the game's asset and is shared by every base-game
+    building, so overriding a parameter on it would change all of them. A child
+    instance keeps the change to this mod.
+
+    `Scale` is the tiling of the shared surface detail on MM_Factory_Array, which
+    MI_Factory2D_01 sets to 20; both were read off the loaded assets by
+    scripts/audit-native-materials.py. A lower number tiles the detail less often,
+    so the wear reads slightly larger.
+    """
+    parent = path_asset("/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01.MI_Factory_Base_01")
+    path = "/TeleportLogistics/Models/MI_TeleporterFactory"
+    instance = (unreal.EditorAssetLibrary.load_asset(path)
+                if unreal.EditorAssetLibrary.does_asset_exist(path) else None)
+    if not isinstance(instance, unreal.MaterialInstanceConstant):
+        instance = tools.create_asset("MI_TeleporterFactory", "/TeleportLogistics/Models",
+                                      unreal.MaterialInstanceConstant,
+                                      unreal.MaterialInstanceConstantFactoryNew())
+    if not isinstance(instance, unreal.MaterialInstanceConstant):
+        raise RuntimeError("Could not create " + path)
+    instance.set_editor_property("parent", parent)
+    unreal.MaterialEditingLibrary.set_material_instance_scalar_parameter_value(
+        instance, "Scale", FACTORY_DETAIL_SCALE)
+    unreal.MaterialEditingLibrary.update_material_instance(instance)
+    unreal.EditorAssetLibrary.save_loaded_asset(instance)
+    return instance
+
+
 screen_material = build_screen_material()
-factory_material = path_asset(
-    "/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01.MI_Factory_Base_01")
+factory_material = build_factory_material()
 decal_color_material = path_asset(
     "/Game/FactoryGame/Buildable/-Shared/Material/DecalColor_Masked.DecalColor_Masked")
 decal_normal_material = path_asset(

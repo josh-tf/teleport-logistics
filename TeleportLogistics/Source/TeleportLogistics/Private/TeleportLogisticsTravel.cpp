@@ -9,6 +9,7 @@
 #include "FGUseableInterface.h"
 #include "Engine/Texture2D.h"
 #include "Hologram/FGFactoryHologram.h"
+#include "Engine/StaticMesh.h"
 #include "FGAttachmentPointComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
@@ -158,11 +159,19 @@ void ATeleportLogisticsTravelHub::UpdateVisual()
     const int32 Signal = Mesh->GetMaterialIndex(TEXT("signal"));
     if (Signal != INDEX_NONE)
     {
-        auto *Material = LoadObject<UMaterialInterface>(
-            nullptr, On ? TEXT("/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01.MI_Factory_Base_01")
-                        : TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
-        if (Material && Mesh->GetMaterial(Signal) != Material)
-            Mesh->SetMaterial(Signal, Material);
+        // This runs on a .2s timer, so cache rather than loading per call, and take
+        // the powered material from the mesh asset's own slot. Naming it instead
+        // means it never compares equal to whatever the import bound, so the timer
+        // reassigns the material five times a second and churns the render state.
+        if (!PoweredSignal)
+            if (const UStaticMesh *Asset = Mesh->GetStaticMesh())
+                PoweredSignal = Asset->GetMaterial(Signal);
+        if (!UnpoweredSignal)
+            UnpoweredSignal = LoadObject<UMaterialInterface>(
+                nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
+        if (auto *Material = On ? PoweredSignal.Get() : UnpoweredSignal.Get())
+            if (Mesh->GetMaterial(Signal) != Material)
+                Mesh->SetMaterial(Signal, Material);
     }
     const int32 ScreenIndex = Mesh->GetMaterialIndex(TEXT("screen"));
     if (ScreenIndex != INDEX_NONE)

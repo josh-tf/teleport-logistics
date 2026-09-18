@@ -435,15 +435,27 @@ void ATeleportLogisticsEndpoint::Factory_Tick(float Dt)
     if (Input && Medium == ETeleportLogisticsMedium::Items && Belt && Belt->IsConnected())
     {
         const int32 MaxGrab = FMath::Min(Space, static_cast<int32>(Belt->MaxNumGrab(Dt)));
+        // Grab first, append under a single lock. The network mutex is one static
+        // shared by every endpoint, and the game runs factory ticks on parallel
+        // workers, so taking it per item serialised every endpoint against every
+        // other one. That cost shows up as stutter across the whole factory rather
+        // than as something you can see near these buildings.
+        TArray<FInventoryItem> Grabbed;
+        Grabbed.Reserve(FMath::Max(MaxGrab, 0));
         for (int32 Count = 0; Count < MaxGrab; ++Count)
         {
             FInventoryItem Item;
             float Offset = 0;
             if (!Belt->Factory_GrabOutput(Item, Offset))
                 break;
+            Grabbed.Add(Item);
+        }
+        if (!Grabbed.IsEmpty())
+        {
             FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
-            Cargo.Add(FInventoryStack(Item)); // Preserve full item state and arrival order.
-            IntakeBudget.spend(1);
+            for (const FInventoryItem &Item : Grabbed)
+                Cargo.Add(FInventoryStack(Item)); // Preserve full item state and arrival order.
+            IntakeBudget.spend(Grabbed.Num());
         }
     }
     else if (Input && Medium == ETeleportLogisticsMedium::Fluid && Pipe && Pipe->IsConnected() && Space > 0)
@@ -624,10 +636,13 @@ void ATeleportLogisticsBuilding::ApplyPowerVisual(bool HasPower)
     const int32 SignalIndex = Main->GetMaterialIndex(TEXT("signal"));
     if (SignalIndex != INDEX_NONE)
     {
+        // Read the powered material from the mesh asset's own slot rather than naming
+        // it. A hardcoded path that disagrees with what the import bound never
+        // compares equal below, so this timer called SetMaterial five times a second
+        // for the life of every endpoint and churned their render state.
         if (!PoweredSignalMaterial)
-            PoweredSignalMaterial = LoadObject<UMaterialInterface>(
-                nullptr, TEXT("/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01."
-                              "MI_Factory_Base_01"));
+            if (const UStaticMesh *Mesh = Main->GetStaticMesh())
+                PoweredSignalMaterial = Mesh->GetMaterial(SignalIndex);
         if (!UnpoweredSignalMaterial)
             UnpoweredSignalMaterial = LoadObject<UMaterialInterface>(
                 nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));

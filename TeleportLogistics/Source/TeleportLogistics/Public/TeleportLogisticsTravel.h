@@ -101,6 +101,11 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     TObjectPtr<class UFGPowerConnectionComponent> Power;
     UPROPERTY()
     TObjectPtr<class UMaterialInstanceDynamic> Screen;
+    /** Cached signal materials; the timer below must not load them per call. */
+    UPROPERTY()
+    TObjectPtr<class UMaterialInterface> PoweredSignal;
+    UPROPERTY()
+    TObjectPtr<class UMaterialInterface> UnpoweredSignal;
     FTimerHandle VisualTimer;
     bool Removed = false;
     bool HasVisualPower = false, LastVisualPower = false;
