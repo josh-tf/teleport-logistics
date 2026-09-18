@@ -209,6 +209,14 @@ for asset_type, names in expected_packages.items():
     assert actual == set(names), (asset_type, sorted(actual - set(names)),
                                   sorted(set(names) - actual))
 
+manifest = json.loads((plugin / "TeleportLogistics.uplugin").read_text())
+# SMR validates a multi-target plugin by comparing these: "SemVer major version
+# should match Version". SML itself ships Version 3 against SemVersion 3.12.0.
+assert manifest["Version"] == int(manifest["SemVersion"].split(".")[0]), (
+    manifest["Version"], manifest["SemVersion"])
+assert manifest["VersionName"] == manifest["SemVersion"], (
+    manifest["VersionName"], manifest["SemVersion"])
+
 import_script = (root / "scripts/import-assets.py").read_text()
 for token in (
     "MI_Factory_Base_01.MI_Factory_Base_01", "DecalColor_Masked.DecalColor_Masked",
