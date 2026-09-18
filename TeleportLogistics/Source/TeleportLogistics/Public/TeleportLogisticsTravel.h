@@ -15,6 +15,9 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     GENERATED_BODY()
   public:
     ATeleportLogisticsTravelHub();
+    /** Rear pad snap target for the game's own wall signs. */
+    UPROPERTY()
+    TObjectPtr<class UFGAttachmentPointComponent> SignMount;
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Factory_Tick(float Dt) override;

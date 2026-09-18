@@ -9,6 +9,8 @@
 #include "FGUseableInterface.h"
 #include "Engine/Texture2D.h"
 #include "Hologram/FGFactoryHologram.h"
+#include "FGAttachmentPointComponent.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveFloat.h"
@@ -32,6 +34,21 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
     mShouldApplyCustomizationData = true;
     mPowerConsumption = 50;
     mFactoryTickFunction.bCanEverTick = true;
+    // Matches ATeleportLogisticsBuilding::AddSignMount; this hub derives from the
+    // native portal base instead, so it carries its own copy.
+    {
+        static ConstructorHelpers::FClassFinder<UFGAttachmentPointType> SignType(
+            TEXT("/Game/FactoryGame/Buildable/-Shared/AttachmentPointTypes/Sign/APT_SignCenter"));
+        auto *Point = CreateDefaultSubobject<UFGAttachmentPointComponent>(TEXT("SignMount"));
+        Point->SetRelativeLocation(FVector(-59, 0, 416));
+        Point->SetRelativeRotation(FRotator(0, 180, 0));
+        if (SignType.Succeeded())
+            Point->mType = SignType.Class;
+        else
+            UE_LOG(LogTeleportLogistics, Error,
+                   TEXT("TeleportLogistics: APT_SignCenter unavailable; signs will not snap"));
+        SignMount = Point;
+    }
     if (!RootComponent)
         SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("TravelRoot")));
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MainMesh"));
@@ -51,6 +68,10 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
 void ATeleportLogisticsTravelHub::BeginPlay()
 {
     Super::BeginPlay();
+    if (SignMount && SignMount->GetAttachParent() == nullptr)
+        SignMount->SetupAttachment(RootComponent);
+    if (mAttachmentPoints.IsEmpty())
+        CreateAttachmentPointsFromComponents(mAttachmentPoints, this);
     Power->SetPowerInfo(GetPowerInfo());
     if (HasAuthority())
     {

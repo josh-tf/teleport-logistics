@@ -36,8 +36,14 @@ def letter(x,y,lines):
 outline=json.loads((root/'assets/vendor/FICSIT/Ficsit-outline.json').read_text())
 # The outline is authored Y-up and Pillow draws Y-down, so py is negated; drawn
 # as-is the wordmark is vertically mirrored. Checked against Ficsit-logo-reference.png.
+# M_TeleporterDetails is opaque and lerps a near-black constant with the texture's
+# RGB using its alpha, so a transparent background renders near-black and dark ink
+# on it disappears. Plate tiles therefore carry their own opaque light ground; the
+# hazard and screw tiles below keep transparent backgrounds and that dark constant.
+PLATE=(198,201,205,255)
 for i,label in enumerate(plates[:5]):
  x,y=(i%4)*512,(i//4)*512
+ draw.rectangle([x,y,x+511,y+511],fill=PLATE)
  # All artwork sits inside a generous transparent margin for mip safety.
  for poly in outline['polygons']:
   draw.polygon([(x+MARGIN+MARK_W/2+px*MARK_W,y+BAND_MID-py*MARK_W) for px,py in poly],fill=(25,29,30,255))
@@ -51,6 +57,7 @@ image.paste(hazard,(512,512))
 # Flat screw head tile: silhouette-changing fasteners remain geometry.
 draw.ellipse((1104,592,1200,688),fill=(91,98,101,255),outline=(26,30,32,255),width=8)
 draw.line((1124,668,1180,612),fill=(27,29,30,255),width=10)
+draw.rectangle([1536,512,2047,1023],fill=PLATE)
 for poly in outline['polygons']:
  draw.polygon([(1536+MARGIN+MARK_W/2+px*MARK_W,512+BAND_MID-py*MARK_W) for px,py in poly],fill=(25,29,30,255))
 letter(1536,512,plates[5])

@@ -459,6 +459,10 @@ def item_terminal(output):
     # connector region starting at x=80, so the wrap has to bridge from 56 to the
     # collar rather than sit only in front of it. Measured by face span: a box only
     # carries corner vertices, so a vertex scan reports the middle of a slab empty.
+    # The vendored liner's upper wall stops around x=230, so looking up from inside
+    # the bay you see straight out of the front. Tuck a lintel just inside the
+    # liner's silhouette; it sits far above the belt path at z=100.
+    box(prefix + "_collar_lintel", (234, 0, 272), (42, 214, 16), "shell", 2)
     for side in (-1, 1):
         box(prefix + f"_collar_flank_{side}", (108, side * 122, 166), (104, 32, 232), "shell", 3)
     # No cap: the roof already spans this depth, and a plate here read as a blank

@@ -112,6 +112,8 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsBuilding : public AFGBuildableFact
     bool VisualPowerInitialized = false;
     bool LastVisualPower = false;
     bool UseModel(const TCHAR *AssetPath);
+    /** Make the rear pad a snap target for the game's own wall signs. */
+    void AddSignMount(const FVector &At);
     void Part(const TCHAR *Name, const TCHAR *Mesh, FVector Position, FVector Scale,
               FRotator Rotation = FRotator::ZeroRotator);
 };

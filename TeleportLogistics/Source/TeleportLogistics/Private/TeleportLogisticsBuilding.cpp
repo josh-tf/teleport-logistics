@@ -20,6 +20,7 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
+#include "FGAttachmentPointComponent.h"
 #include "Misc/ScopeLock.h"
 #include "Net/UnrealNetwork.h"
 
@@ -53,6 +54,24 @@ void ATeleportLogisticsBuilding::Part(const TCHAR *Name, const TCHAR *Mesh, FVec
     Component->SetMobility(EComponentMobility::Static);
 }
 
+void ATeleportLogisticsBuilding::AddSignMount(const FVector &At)
+{
+    // sign_mount in generate-models-blender.py authors a flat rear-facing pad for
+    // exactly this. An attachment point is what makes the game offer it as a snap
+    // target; without one the sign hologram just refuses to place.
+    static ConstructorHelpers::FClassFinder<UFGAttachmentPointType> SignType(
+        TEXT("/Game/FactoryGame/Buildable/-Shared/AttachmentPointTypes/Sign/APT_SignCenter"));
+    auto *Point = CreateDefaultSubobject<UFGAttachmentPointComponent>(TEXT("SignMount"));
+    Point->SetupAttachment(RootComponent);
+    Point->SetRelativeLocation(At);
+    // The pad faces -X, so the point's forward turns to match it.
+    Point->SetRelativeRotation(FRotator(0, 180, 0));
+    if (SignType.Succeeded())
+        Point->mType = SignType.Class;
+    else
+        UE_LOG(LogTeleportLogistics, Error,
+               TEXT("TeleportLogistics: APT_SignCenter unavailable; signs will not snap"));
+}
 bool ATeleportLogisticsBuilding::UseModel(const TCHAR *AssetPath)
 {
     auto *Mesh = LoadObject<UStaticMesh>(nullptr, AssetPath, nullptr, LOAD_NoWarn);
@@ -67,6 +86,10 @@ bool ATeleportLogisticsBuilding::UseModel(const TCHAR *AssetPath)
 void ATeleportLogisticsBuilding::BeginPlay()
 {
     Super::BeginPlay();
+    // Only if the base class has not already gathered them, so a future engine
+    // update that does this itself does not end up with the points twice.
+    if (mAttachmentPoints.IsEmpty())
+        CreateAttachmentPointsFromComponents(mAttachmentPoints, this);
     if (HasAuthority())
     {
         if (!TeleporterId.IsValid())
@@ -241,6 +264,7 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     Fog->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Fog->SetGenerateOverlapEvents(false);
     Fog->SetCastShadow(false);
+    AddSignMount(FVector(-143, 0, 240));
     mHasFactory_GrabOutput = true;
     mHasFactory_PeekOutput = true;
     if (UseModel(IsInput ? TEXT("/TeleportLogistics/Models/SM_TeleporterItemInput.SM_TeleporterItemInput")
@@ -275,6 +299,7 @@ void ATeleportLogisticsEndpoint::FluidPort(bool IsInput)
     Pipe->SetRelativeRotation(FRotator::ZeroRotator);
     Pipe->SetConnectorClearance(20);
     Pipe->SetInventoryAccessIndex(0);
+    AddSignMount(FVector(-133, 0, 247));
     if (UseModel(IsInput ? TEXT("/TeleportLogistics/Models/SM_TeleporterFluidInput.SM_TeleporterFluidInput")
                          : TEXT("/TeleportLogistics/Models/SM_TeleporterFluidOutput.SM_TeleporterFluidOutput")))
         return;
@@ -530,6 +555,7 @@ ATeleportLogisticsHub::ATeleportLogisticsHub()
     // Workbench-sized mesh; OBJ import mirrors Blender Y at the mast cap.
     Power->SetRelativeLocation(FVector(-83.64, 52.5, 298.8));
     Power->SetRelativeRotation(FRotator(0, 180, 0));
+    AddSignMount(FVector(-142.6, -52.5, 235));
     if (UseModel(TEXT("/TeleportLogistics/Models/SM_TeleporterHub.SM_TeleporterHub")))
         return;
     Part(TEXT("ConsoleStand"), TEXT("/Engine/BasicShapes/Cube.Cube"), FVector(0, 0, 70),
