@@ -401,7 +401,11 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::BuildRoutes()
                                                         })];
     if (Cast<ATeleportLogisticsHub>(Context))
     {
-        Box->AddSlot().FillHeight(1)[SAssignNew(RoutesBox, SVerticalBox)];
+        // Slate does not clip by default, so a list taller than its slot drew over
+        // the pager beneath it. Scrolling contains the overflow and still reaches
+        // entries that do not fit.
+        Box->AddSlot().FillHeight(1)[SNew(SScrollBox).Clipping(EWidgetClipping::ClipToBounds) +
+                                     SScrollBox::Slot()[SAssignNew(RoutesBox, SVerticalBox)]];
         auto Pages = SNew(SHorizontalBox);
         Pages->AddSlot().AutoWidth()[Action(TEXT("Previous"), [this] {
             --RoutePage; LastListKey.Empty(); RenderLists(); return FReply::Handled();
@@ -629,7 +633,10 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::BuildPanel()
                                      : FString(E && E->Medium == ETeleportLogisticsMedium::Fluid ? TEXT("Fluid Teleporter")
                                                                                      : TEXT("Item Teleporter")) +
                                            (E && !E->Input ? TEXT(" (Output)") : TEXT(" (Input)"));
-            return Id + TEXT("\n") + (IsHub ? Data.ContextLabel : RoutePath(Data.AssignedRoute));
+            // BeginPlay seeds a building's label from its display name, so the second
+            // line repeats the first until the player renames it.
+            const FString Detail = IsHub ? Data.ContextLabel : RoutePath(Data.AssignedRoute);
+            return Detail.IsEmpty() || Detail == Id ? Id : Id + TEXT("\n") + Detail;
         },
         16)];
     Identity->AddSlot().AutoWidth().VAlign(VAlign_Center)[Live(

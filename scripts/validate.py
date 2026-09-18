@@ -195,7 +195,7 @@ print("PASS: twelve 3D descriptor captures, five transparent map markers, native
       "category/milestone art, and two atlas textures")
 
 expected_packages = {
-    "Models": [f"SM_Teleporter{name}" for name in model_names] + ["M_TeleporterScreen", "M_TeleporterSignalOff", "M_TeleporterDetails", "MI_TeleporterFactory"],
+    "Models": [f"SM_Teleporter{name}" for name in model_names] + ["M_TeleporterScreen", "M_TeleporterSignalOff", "M_TeleporterDetails"],
     "Icons": [path.stem for path in icons] + [f"MI_TeleporterMap{name}" for name in model_names if name != "TravelHub"],
     "UI": [f"T_TeleporterUI_{name}" for name in ("Plate", "Well", "Meter")],
     "Textures": ["T_TeleporterScreen_Grid", "T_TeleporterDetails"],
@@ -212,8 +212,6 @@ for asset_type, names in expected_packages.items():
 import_script = (root / "scripts/import-assets.py").read_text()
 for token in (
     "MI_Factory_Base_01.MI_Factory_Base_01", "DecalColor_Masked.DecalColor_Masked",
-    # The stock material stays the parent, and the detail tiling stays a named constant.
-    "FACTORY_DETAIL_SCALE", 'set_material_instance_scalar_parameter_value',
     '"TeleporterPower"', 'mesh.set_editor_property("lod_group", "None")',
     "mesh.get_num_lods() != 3", "mesh.set_material(material_index, materials[slot_name])",
 ):

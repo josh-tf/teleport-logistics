@@ -73,12 +73,7 @@ no_power_signal = unreal.EditorAssetLibrary.load_asset(
 require(no_power_signal is not None,
         "Missing explicit zero-emission material used to darken the Teleporter Hub")
 
-# The factory surface is our own instance of the stock material so the detail
-# tiling can differ from every base-game building. Its parent is asserted below,
-# which is the property that actually matters: inheriting the stock parameter
-# interface is what keeps Customizer paint and the build effect working.
-FACTORY_MATERIAL = "/TeleportLogistics/Models/MI_TeleporterFactory.MI_TeleporterFactory"
-FACTORY_PARENT = "/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01.MI_Factory_Base_01"
+FACTORY_MATERIAL = "/Game/FactoryGame/-Shared/Material/MI_Factory_Base_01.MI_Factory_Base_01"
 material_paths = {
     "decal_custom": "/TeleportLogistics/Models/M_TeleporterDetails.M_TeleporterDetails",
     "factory": FACTORY_MATERIAL,
@@ -115,11 +110,6 @@ for model_name in models:
         require(actual_path == material_paths[slot_name],
                 f"SM_Teleporter{model_name} {slot_name}: expected {material_paths[slot_name]}, "
                 f"got {actual_path}")
-        if actual_path == FACTORY_MATERIAL:
-            parent = interface.get_editor_property("parent")
-            require(parent is not None and parent.get_path_name() == FACTORY_PARENT,
-                    f"{FACTORY_MATERIAL} must inherit {FACTORY_PARENT}, got "
-                    f"{parent.get_path_name() if parent else 'None'}")
     building_class = unreal.load_class(None, f"/Script/TeleportLogistics.TeleportLogistics{model_name}")
     require(building_class is not None, f"Missing building class TeleportLogistics{model_name}")
     building_default = unreal.get_default_object(building_class)
