@@ -727,6 +727,16 @@ def wedge(name, location, dimensions, surface="paint_primary", slope=0.30, bevel
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
+    # The winding above is hand-authored and several faces, the sloped top among
+    # them, come out pointing inward. Those are backface culled in game, so the
+    # delivery rails read as open channels from above. Settle it rather than
+    # reordering six tuples by hand.
+    fix = bmesh.new()
+    fix.from_mesh(mesh)
+    bmesh.ops.recalc_face_normals(fix, faces=fix.faces)
+    fix.to_mesh(mesh)
+    fix.free()
+    mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     obj.location = location
