@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.11
+
+Tier 9 costs and the Personnel Teleporter recipe called for Quantum Crystal, which the game has discontinued in favour of Time Crystal; its milestone tile showed the discontinued item and its replacement notice. Both now use Time Crystal at the same amounts, matching what the README and the mod page already stated.
+
+The twin delivery rails on the item endpoint roofs had no top. Their faces were wound inward, so the sloped upper face was culled and each rail read as an open channel; the hub console frame was built from the same helper and had the same fault.
+
+Building bodies use the rough metal surface rather than the painted composite they were mapped to, which read flat beside the stock machines, and their surface detail tiles at the stock rate.
+
 ## 0.5.10: first public release
 
 Plugin, module, native types, asset mount, source filenames, build scripts and viewer keys use the
