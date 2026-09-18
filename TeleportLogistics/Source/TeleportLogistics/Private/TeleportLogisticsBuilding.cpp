@@ -198,6 +198,11 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     // constructor-time loader: it resolves against mounted content the way the engine
     // expects during CDO construction, where a bare LoadObject can return null. The
     // material is bound explicitly rather than trusted to arrive on the mesh's slot 0.
+    // The belt aperture, measured off both item OBJs in the slab where the plane
+    // sits, which agree exactly: recess z spans 71.7 to 280.9 and the inner side
+    // walls stand at |y| = 95.5, so the opening is 191 x 209 centred on z = 176.
+    // Inset slightly so the plane cannot poke through the surrounding shell.
+    constexpr double FogWidth = 188, FogHeight = 205, FogCentreZ = 176;
     auto *Fog = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InputFog"));
     Fog->SetupAttachment(RootComponent);
     static ConstructorHelpers::FObjectFinder<UStaticMesh> FogMesh(
@@ -212,15 +217,25 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
         Fog->SetMaterial(0, FogMaterial.Object);
     else
         UE_LOG(LogTeleportLogistics, Error, TEXT("TeleportLogistics: InputFog material unavailable"));
-    // The quad lies in its own XZ plane, so without a yaw it faces along Y and the
-    // player looking into the connector sees it edge-on as a sliver. Yaw turns its
-    // normal onto the belt axis; local X then reads as width and local Z as height.
-    // The aperture is roughly 192 cm across, centred on z = 190 in the 285.9 x 322.9
-    // envelope, and the mesh's own extent is not readable offline, so the scale is
-    // tuned against that opening rather than derived.
-    Fog->SetRelativeLocation(FVector(190, 0, 190));
+    // Size the plane to that aperture from the mesh's own bounds rather than a tuned
+    // constant: the SDK ships this asset as a stub, so its extent cannot be read
+    // offline, and a hardcoded scale would silently lie if the art ever changed.
+    Fog->SetRelativeLocation(FVector(190, 0, FogCentreZ));
+    // The quad is authored in its own XZ plane, so with no yaw it faces along Y and
+    // a player looking into the connector sees it edge-on. Yawing puts its normal on
+    // the belt axis, after which local X reads as width and local Z as height.
     Fog->SetRelativeRotation(FRotator(0, 90, 0));
-    Fog->SetRelativeScale3D(FVector(0.72, 0.53, 0.68));
+    if (FogMesh.Succeeded())
+    {
+        const FVector Extent = FogMesh.Object->GetBounds().BoxExtent;
+        const auto Fit = [](double Target, double HalfExtent) {
+            return HalfExtent > UE_KINDA_SMALL_NUMBER ? Target / (2 * HalfExtent) : 1.0;
+        };
+        Fog->SetRelativeScale3D(FVector(Fit(FogWidth, Extent.X), 1, Fit(FogHeight, Extent.Z)));
+        UE_LOG(LogTeleportLogistics, Log,
+               TEXT("TeleportLogistics: fog plane extent %s, scale %s"), *Extent.ToString(),
+               *Fog->GetRelativeScale3D().ToString());
+    }
     Fog->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Fog->SetGenerateOverlapEvents(false);
     Fog->SetCastShadow(false);
