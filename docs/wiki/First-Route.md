@@ -11,7 +11,7 @@ Unlock **Teleport Logistics** at Tier 5 in the HUB terminal.
 That unlocks the four item and fluid endpoints and the management hub, all in the **Teleporter**
 build category under the subheading **Teleporter Network**.
 
-<!-- IMG: WIKI_FIRST_UNLOCK — Tier 5 milestone tile in the HUB terminal, 3D rewards visible -->
+<!-- IMG: WIKI_FIRST_UNLOCK, Tier 5 milestone tile in the HUB terminal, 3D rewards visible -->
 
 ## 2. Build the pair
 
@@ -22,7 +22,7 @@ The build-menu tiles read `Item (In)` and `Item (Out)`; the same short names app
 a placed building. Each one carries a glyph on both side panels so you can tell input from output
 without opening anything.
 
-<!-- IMG: WIKI_FIRST_PLACED — an Item (In) and an Item (Out) placed, unconnected -->
+<!-- IMG: WIKI_FIRST_PLACED, an Item (In) and an Item (Out) placed, unconnected -->
 
 ## 3. Name the route
 
@@ -33,14 +33,14 @@ The name is the whole mechanism. Two endpoints on the same channel and route are
 all there is to it. `iron-plates` or `sink-feed` works well. Route names are per channel, so you can
 reuse a name on a different channel later.
 
-<!-- IMG: WIKI_FIRST_ROUTE_ENTRY — endpoint window with the route name being entered -->
+<!-- IMG: WIKI_FIRST_ROUTE_ENTRY, endpoint window with the route name being entered -->
 
 ## 4. Connect belts
 
 Feed the input with a belt and run a belt from the output into your factory. Cargo starts moving as
 soon as both ends share a route and the input has something to take.
 
-<!-- IMG: WIKI_FIRST_WORKING — belts running into the input and out of the output, cargo flowing -->
+<!-- IMG: WIKI_FIRST_WORKING, belts running into the input and out of the output, cargo flowing -->
 
 ## 5. Watch it work
 
@@ -51,8 +51,8 @@ up, not that the route is broken.
 ## Fluids
 
 The fluid pair works the same way with pipes, with one rule: a fluid route carries one fluid type at
-a time. Send only Water on a route, or only Fuel. To change what a route carries, empty it first —
-see [Channels and routes](Channels-and-Routes).
+a time. Send only Water on a route, or only Fuel. To change what a route carries, empty it first.
+See [Channels and routes](Channels-and-Routes).
 
 ## What next
 

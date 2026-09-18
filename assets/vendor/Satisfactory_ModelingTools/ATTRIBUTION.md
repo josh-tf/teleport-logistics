@@ -8,6 +8,9 @@ TeleportLogistics uses the following original, community-created connector meshe
 - `FactoryPipe_In`
 - `FactoryPipe_Out`
 - `PowerConnector_Compact`
+- `Factory_Base_Plain.png` and `Factory_Base_UVSheet.png`, the factory material reference sheets.
+  The labelled sheet names each cell, which is what the surface mapping in
+  `scripts/generate-models-blender.py` is keyed against.
 
 Upstream grants use in its README, verbatim:
 

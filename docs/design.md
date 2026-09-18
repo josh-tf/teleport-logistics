@@ -10,7 +10,7 @@ Accepted requirements and implemented policy:
 | Optional hubs | Each placed hub creates a channel. Power unlocks naming and management controls. |
 | Power failure | Transport continues. Management is unavailable and hub screens/lamps go dark until power returns. |
 | Identity | GUIDs identify hubs, routes and endpoints. Names are editable labels. Default uses a zero channel GUID. |
-| Naming | 1–64 characters, no control characters or outer whitespace. Route names are unique within a channel, case-insensitively. |
+| Naming | 1-64 characters, no control characters or outer whitespace. Route names are unique within a channel, case-insensitively. |
 | Multiple inputs | Contribute to the same route with per-endpoint rate limits. |
 | Multiple outputs | Share accepted material through persistent round-robin scheduling; blocked receivers are skipped. |
 | Mixed items | No automatic material filter. Input and output queues retain arrival order. A blocked first item is not bypassed for a later preferred item. |

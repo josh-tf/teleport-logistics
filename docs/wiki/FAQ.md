@@ -15,7 +15,7 @@ Check, in this order:
 
 ## Why do Item (In) and Item (Out) look the same in the build menu?
 
-They are colour-coded and carry different glyphs — mint for input, orange for output. The build menu
+They are colour-coded and carry different glyphs: mint for input, orange for output. The build menu
 clamps a tile label to two lines, which is also why the names are short.
 
 ## Can I filter what an output receives?
@@ -71,7 +71,7 @@ The way the placement arrow points. Aim it somewhere useful when you build.
 ## Can I change transport rates or power costs in the settings?
 
 No, and this is deliberate. SML writes settings per client, so a gameplay number in there would let
-one player's client disagree with the host. The settings are interface preferences only — see
+one player's client disagree with the host. The settings are interface preferences only. See
 [Multiplayer and dedicated servers](Multiplayer-and-Dedicated-Servers).
 
 ## The interface costs me frames on a big network

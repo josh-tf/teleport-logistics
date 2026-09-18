@@ -30,7 +30,7 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 PALETTE = {
     "paint_primary": ((0.95, 0.35, 0.025), 0.12, 0.34),
     "paint_secondary": ((0.15, 0.17, 0.19), 0.18, 0.39),
-    "shell": ((0.50, 0.54, 0.57), 0.58, 0.32),
+    "shell": ((0.72, 0.72, 0.72), 0.82, 0.26),
     "steel": ((0.22, 0.24, 0.25), 0.80, 0.28),
     "frame": ((0.035, 0.040, 0.045), 0.58, 0.40),
     "rubber": ((0.008, 0.010, 0.012), 0.0, 0.78),
@@ -46,15 +46,26 @@ PALETTE = {
     "decal_normal": ((0.50, 0.50, 0.50), 0.0, 0.45),
 }
 
-# UV origin is bottom-left. These regions match Factory_Base_UVSheet.png.
+# UV origin is bottom-left. Regions match the vendored Factory_Base_UVSheet.png,
+# whose cells the upstream kit labels as follows; our key names predate reading it,
+# so the documented name is given for each:
+#   Primary Metal   Composite Color   Dark Rubber/Plastic
+#   Secondary Metal Grey Rough Metal  Plastic
+#   Chrome          Dark Steel        Lights / Pure Unlit Black
+# Composite Color is a painted composite, not a metal, which is why body panels
+# mapped to it read as flat grey next to the stock machines.
 # A small inset prevents mip bleeding across atlas cells.
 ATLAS_RECTS = {
-    "paint_primary": (0.012, 0.678, 0.322, 0.988),
-    "paint_secondary": (0.012, 0.345, 0.322, 0.655),
-    "shell": (0.345, 0.678, 0.655, 0.988),
-    "steel": (0.012, 0.012, 0.322, 0.322),
-    "frame": (0.345, 0.012, 0.655, 0.322),
-    "rubber": (0.678, 0.678, 0.988, 0.988),
+    "paint_primary": (0.012, 0.678, 0.322, 0.988),      # Primary Metal
+    "paint_secondary": (0.012, 0.345, 0.322, 0.655),    # Secondary Metal
+    # The body panels read as flat grey in game: that cell is painted metal, not
+    # bare. Point them at the same cell the plate bezels use, which is the one
+    # that reads as metal in the stock assets. Kept as its own key so the two
+    # can diverge again without touching 41 call sites.
+    "shell": (0.012, 0.012, 0.322, 0.322),              # Chrome, was Composite Color
+    "steel": (0.012, 0.012, 0.322, 0.322),              # Chrome
+    "frame": (0.345, 0.012, 0.655, 0.322),              # Dark Steel
+    "rubber": (0.678, 0.678, 0.988, 0.988),             # Dark Rubber/Plastic
     "warning": (0.678, 0.012, 0.822, 0.155),
     "glow": (0.678, 0.178, 0.822, 0.322),
     # The atlas preview's teal and orange cells are input and output.

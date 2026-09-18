@@ -7,17 +7,17 @@ crosses the map with no train line, truck path or drone port in between.
 
 ## Start here
 
-- **[Your first route](First-Route)** — the five minutes from unlock to working cargo.
-- **[Buildings](Buildings)** — what each of the six buildings does, with power and buffer figures.
-- **[Channels and routes](Channels-and-Routes)** — naming, searching and reassigning.
+- **[Your first route](First-Route)**: the five minutes from unlock to working cargo.
+- **[Buildings](Buildings)**: what each of the six buildings does, with power and buffer figures.
+- **[Channels and routes](Channels-and-Routes)**: naming, searching and reassigning.
 
 ## Going further
 
-- **[Hubs](Hubs)** — optional channel management for a large network.
-- **[Personnel Teleporters](Personnel-Teleporters)** — Tier 9 travel between outposts.
-- **[Throughput and power](Throughput-and-Power)** — the real limits and what actually constrains them.
-- **[Multiplayer and dedicated servers](Multiplayer-and-Dedicated-Servers)** — hosting and client setup.
-- **[FAQ](FAQ)** — known limitations and common problems.
+- **[Hubs](Hubs)**: optional channel management for a large network.
+- **[Personnel Teleporters](Personnel-Teleporters)**: Tier 9 travel between outposts.
+- **[Throughput and power](Throughput-and-Power)**: the real limits and what actually constrains them.
+- **[Multiplayer and dedicated servers](Multiplayer-and-Dedicated-Servers)**: hosting and client setup.
+- **[FAQ](FAQ)**: known limitations and common problems.
 
 ## Getting help
 

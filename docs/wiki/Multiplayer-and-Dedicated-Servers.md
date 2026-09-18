@@ -25,8 +25,8 @@ is genuinely useful.
 The host owns the network. Route assignments, channel membership and transport all happen on the
 host and replicate to clients, so what you see in a window is the host's state.
 
-Actions taken from a client — naming a route, enabling an endpoint, taking buffered items, flushing
-a fluid buffer — are sent to the host to perform. A client cannot desynchronise the network by
+Actions taken from a client, such as naming a route, enabling an endpoint, taking buffered items or
+flushing a fluid buffer, are sent to the host to perform. A client cannot desynchronise the network by
 clicking faster than the host can answer.
 
 Map markers are created by the host, so every player sees the same endpoints on the map.
@@ -36,12 +36,12 @@ Map markers are created by the host, so every player sees the same endpoints on 
 The settings under **Mods** in the pause menu are **client-side only**. They cover interface
 preferences and nothing else:
 
-- **Window refresh interval** — how often an open window re-reads the network.
-- **Show route when looking at a building** — the channel and route line in the look-at panel.
-- **Confirm before flushing fluid** — the confirmation step on a fluid flush.
+- **Window refresh interval**: how often an open window re-reads the network.
+- **Show route when looking at a building**: the channel and route line in the look-at panel.
+- **Confirm before flushing fluid**: the confirmation step on a fluid flush.
 
 Deliberately absent: anything that affects transport rates, power draw, the route ceiling or travel
-timing. Those are compile-time constants precisely because SML writes settings per client — exposing
+timing. Those are compile-time constants precisely because SML writes settings per client. Exposing
 a gameplay number would let one player's client disagree with the host about how the world works.
 
 ## Dedicated server setup

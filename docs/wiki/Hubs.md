@@ -3,7 +3,7 @@
 A **Teleporter Hub** is optional. Logistics work perfectly well on the Default channel with no hub
 anywhere on the map. A hub earns its 5 MW once your network outgrows what you can remember.
 
-<!-- IMG: WIKI_HUB_WINDOW — hub window: channel list, route detail, endpoint directory -->
+<!-- IMG: WIKI_HUB_WINDOW, hub window: channel list, route detail, endpoint directory -->
 
 ## What it adds
 
@@ -19,10 +19,10 @@ anywhere on the map. A hub earns its 5 MW once your network outgrows what you ca
 The hub draws **5 MW** and stores no cargo.
 
 Cutting its power disables **management, not logistics**. Routes keep moving cargo while the hub is
-dark; you simply lose the window until power returns. This is deliberate — a brownout should not
+dark; you simply lose the window until power returns. This is deliberate: a brownout should not
 strand your factory's supply lines.
 
-<!-- IMG: WIKI_HUB_UNPOWERED — hub with no power, logistics still running -->
+<!-- IMG: WIKI_HUB_UNPOWERED, hub with no power, logistics still running -->
 
 ## Channels
 

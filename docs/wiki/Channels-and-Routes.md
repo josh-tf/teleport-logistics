@@ -2,7 +2,7 @@
 
 A **route** is a name shared by two or more endpoints. A **channel** groups routes.
 
-Endpoints on the same channel and the same route are connected. Nothing else wires them together —
+Endpoints on the same channel and the same route are connected. Nothing else wires them together:
 no cables, no line of sight, no distance limit.
 
 ## The Default channel
@@ -10,7 +10,7 @@ no cables, no line of sight, no distance limit.
 Every endpoint starts on **Default**, which needs no hub and no power. If you never build a hub, you
 never need to think about channels at all: give a pair the same route name and they are connected.
 
-<!-- IMG: WIKI_ROUTES_PICKER — channel and route picker with search and the create option -->
+<!-- IMG: WIKI_ROUTES_PICKER, channel and route picker with search and the create option -->
 
 ## Naming routes
 
@@ -18,7 +18,7 @@ Press **E** on an endpoint, choose or create a route, and apply. The picker sear
 which is what makes a large network usable.
 
 Route names are scoped to their channel, so `overflow` on Default and `overflow` on a hub channel
-are different routes. Pick names that say what the cargo is or where it goes — `plates-to-sink`
+are different routes. Pick names that say what the cargo is or where it goes. `plates-to-sink`
 beats `route 4` when you come back in a month.
 
 The network supports up to **256 routes**.
@@ -35,7 +35,7 @@ Changing an endpoint's route is a two-step job, deliberately:
 The buffer step matters. Cargo sitting in a buffer belongs to the route it arrived on; moving an
 endpoint without draining it would deliver the old route's cargo to the new one.
 
-<!-- IMG: WIKI_ROUTES_REASSIGN — endpoint disabled, buffer actions available -->
+<!-- IMG: WIKI_ROUTES_REASSIGN, endpoint disabled, buffer actions available -->
 
 ## Fluid routes and fluid type
 

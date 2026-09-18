@@ -6,8 +6,8 @@
 | --- | --- | --- | --- |
 | Item endpoint | 1,200 items/min | 64 items | none |
 | Fluid endpoint | 600 m³/min | 50 m³ | none |
-| Teleporter Hub | — | none | 5 MW |
-| Personnel Teleporter | — | none | 50 MW at each end |
+| Teleporter Hub | not applicable | none | 5 MW |
+| Personnel Teleporter | not applicable | none | 50 MW at each end |
 
 These are **configured ceilings per endpoint**, not measured rates and not promises. What you
 actually get is whichever of these is smallest:
@@ -28,7 +28,7 @@ Personnel Teleporters draw power.
 
 ## What the buffers are for
 
-Each endpoint holds a small local buffer — 64 items or 50 m³. They exist to smooth the timing
+Each endpoint holds a small local buffer of 64 items or 50 m³. They exist to smooth the timing
 mismatch between a belt arriving in bursts and a route sending continuously.
 
 They are **not storage**. A buffer that sits full tells you something: at an output, the receiving
@@ -52,5 +52,5 @@ For a large network, a [hub](Hubs) pays for its 5 MW in search time alone.
 ## Interface cost
 
 If a very large network makes the endpoint or hub window cost you frames, raise the **window refresh
-interval** in the mod settings — see [FAQ](FAQ). It changes how often an open window re-reads the
+interval** in the mod settings. See [FAQ](FAQ). It changes how often an open window re-reads the
 network, and nothing about transport.
