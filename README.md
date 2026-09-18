@@ -1,6 +1,10 @@
 # Teleport Logistics
 
-Teleport items, fluids and Pioneers between distant parts of your factory. Use named routes for logistics and a destination directory for personal travel.
+![Teleport Logistics](docs/publishing/media/banner.png)
+
+An unofficial mod for [Satisfactory](https://www.satisfactorygame.com/) by Coffee Stain Studios, built on [SML](https://ficsit.app/). Teleport items, fluids and Pioneers between distant parts of your factory. Use named routes for logistics and a destination directory for personal travel.
+
+The banner is a studio render of the authored meshes, not an in-game screenshot.
 
 Current candidate: **0.5.10**, built for Satisfactory **CL502094**, SML **3.12.0** and CSS Unreal **5.6.1**. Windows Steam/Epic client and Windows dedicated-server packages are the release targets. See the [release audit](reports/0.5.10-release-audit.md) for verified checks and remaining retail-game acceptance.
 

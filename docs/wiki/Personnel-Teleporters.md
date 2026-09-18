@@ -9,8 +9,7 @@ Tier 9 unlocks **Teleport Personnel Transport**: travel between your own outpost
 ## Setting up
 
 1. Build a **Personnel Teleporter** at each end and give each **50 MW**.
-2. Name them. The name is what you will see in the destination list, so `north-outpost` beats the
-   default.
+2. Name them. The name is what you will see in the destination list, so `north-outpost` beats the default.
 3. Press **E** and click a ready destination.
 
 Both ends need power. A destination with no power appears in the list but cannot be chosen.
@@ -26,18 +25,15 @@ The window lists every Personnel Teleporter you have built, with:
 - whether it is ready, unpowered or busy,
 - an optional icon, using the game's own sign icons.
 
-The list searches as you type. Assigning sign icons to your teleporters makes a large network much
-faster to read than names alone.
+The list searches as you type. Assigning sign icons to your teleporters makes a large network much faster to read than names alone.
 
 <!-- IMG: WIKI_PERSONNEL_DIRECTORY, directory with sign icons, one ready and one unpowered -->
 
 ## Arriving
 
-The **placement arrow** on the building marks the exit direction, so you arrive facing the way the
-arrow points. Aim it somewhere sensible when you build, not into a wall.
+The **placement arrow** on the building marks the exit direction, so you arrive facing the way the arrow points. Aim it somewhere sensible when you build, not into a wall.
 
-A journey reserves the destination for **30 seconds**. During that window the destination shows as
-busy and will not accept another traveller, which prevents two pioneers arriving in the same spot.
+A journey reserves the destination for **30 seconds**. During that window the destination shows as busy and will not accept another traveller, which prevents two pioneers arriving in the same spot.
 
 ## Limits
 
@@ -47,5 +43,4 @@ busy and will not accept another traveller, which prevents two pioneers arriving
 
 ## On the map
 
-Personnel Teleporters appear in their own map section, separate from logistics endpoints, so the map
-stays readable once you have many of each.
+Personnel Teleporters appear in their own map section, separate from logistics endpoints, so the map stays readable once you have many of each.
