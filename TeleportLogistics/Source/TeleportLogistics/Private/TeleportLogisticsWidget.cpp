@@ -129,17 +129,6 @@ TSharedRef<SWidget> Surface(const TSharedRef<SWidget> &Body, FLinearColor Color 
         .BorderBackgroundColor(Color)
         .Padding(Padding)[Body];
 }
-// A Box brush draws its end caps Margin * ImageSize pixels deep, un-stretched, at
-// each edge. Content has to start beyond that or it sits on the frame art rather
-// than inside it. Deriving the padding keeps the two from drifting apart whenever
-// the plate is regenerated at a new size.
-FMargin Inside(const FSlateBrush &Brush, FMargin Extra)
-{
-    return FMargin(Brush.Margin.Left * Brush.ImageSize.X + Extra.Left,
-                   Brush.Margin.Top * Brush.ImageSize.Y + Extra.Top,
-                   Brush.Margin.Right * Brush.ImageSize.X + Extra.Right,
-                   Brush.Margin.Bottom * Brush.ImageSize.Y + Extra.Bottom);
-}
 void Group(const TSharedRef<SVerticalBox> &Box, const FString &Label, const TSharedRef<SWidget> &Body)
 {
     Box->AddSlot().AutoHeight().Padding(0, 0, 0, 6)[Text(Label, 12, TextMuted, true)];
@@ -244,7 +233,11 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::Plate(const TSharedRef<SWidget> &B
     return SNew(SBorder)
         .BorderImage(&PlateBrush)
         .BorderBackgroundColor(FLinearColor(.38f, .38f, .38f, 1.f))
-        .Padding(Inside(PlateBrush, FMargin(10, 8, 10, 12)))[Body];
+        // The plate art carries a dark band across its bottom edge, drawn un-stretched
+        // Margin.Bottom * ImageSize.Y deep. Content has to clear it or the bottom-most
+        // row sits on the band, which is what clipped the confirmation buttons. The
+        // other three edges are plain art, so they keep their original spacing.
+        .Padding(FMargin(20, 20, 20, PlateBrush.Margin.Bottom * PlateBrush.ImageSize.Y + 12))[Body];
 }
 TSharedRef<SWidget> UTeleportLogisticsWidget::Action(const FString &Label, TFunction<FReply()> Callback,
                                          TFunction<bool()> Enabled, bool Primary, const FString &Hint)

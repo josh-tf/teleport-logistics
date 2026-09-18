@@ -31,12 +31,14 @@ Naming decisions inside the package: the mod is **Teleport Logistics**, and the 
 because they are teleporters within that system. The milestones are **Teleport Logistics** (Tier 5) and
 **Teleport Personnel Transport** (Tier 9).
 
-Building names are two-tier, because the build menu clamps a tile label to two lines and wraps on spaces, which
-truncated "(Input)" and made the input and output tiles identical. The descriptors carry the short label that fits
-the tile (`Item (In)`, `Item (Out)`, `Fluid (In)`, `Fluid (Out)`, `Teleporter Hub`, `Personnel Teleporter`) and the
-buildables carry the full name used by the hologram and the dismantle UI (`Item Teleporter (Input)` and so on).
-Descriptors also set `mAbbreviatedDisplayName` for any compact UI that reads it. Do not collapse the two tiers: the
-long name does not fit the tile and the short name is too vague on its own.
+Building names are short, because the build menu clamps a tile label to two lines and wraps on spaces, which
+truncated "(Input)" and left the input and output tiles reading identically. A two-tier scheme was tried first and
+does not work: `UFGBuildingDescriptor` overrides `GetItemNameInternal` to return `mBuildableClass`'s `mDisplayName`,
+so a short label set on the descriptor is never read, and `mAbbreviatedDisplayName` is not what the tile uses
+either. The name therefore lives on the buildable, where one string serves the tile, the look-at panel, the use
+prompt, the hologram and the dismantle UI alike: `Item (In)`, `Item (Out)`, `Fluid (In)`, `Fluid (Out)`,
+`Teleporter Hub`, `Personnel Teleporter`. The descriptive form survives in the configure window's heading. Do not
+move these back onto the descriptors.
 
 ## Media
 

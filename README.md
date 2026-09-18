@@ -7,9 +7,9 @@ Current candidate: **0.5.10**, built for Satisfactory **CL502094**, SML **3.12.0
 ## Get started
 
 1. Unlock **Teleport Logistics** at Tier 5 in the HUB.
-2. Build an **Item Teleporter (Input)** and **Item Teleporter (Output)** from the **Teleporter** build category.
+2. Build an **Item (In)** and an **Item (Out)** from the **Teleporter** build category.
 3. Press **E** at each building. Leave the channel as **Default**, enter the same route name, and apply.
-4. Connect a supplying belt to Input and a receiving belt to Output. Input sends cargo into the network; Output delivers it back into your factory.
+4. Connect a supplying belt to the In and a receiving belt to the Out. In sends cargo into the network; Out delivers it back into your factory.
 5. Use the fluid pair the same way with pipes. A fluid route accepts one fluid type at a time.
 
 Default works without a hub. A powered **Teleporter Hub** adds a named channel, endpoint directory, route renaming, pause/resume and throughput information. Cutting its power disables management, not logistics transport.
@@ -20,8 +20,8 @@ At Tier 9, unlock **Teleport Personnel Transport**. Build and power two **Person
 
 | Building | Role | Power | Local buffer |
 | --- | --- | --- | --- |
-| Item Teleporter (Input/Output) | Belt cargo into/out of a route | No electrical connection | 64 individual items |
-| Fluid Teleporter (Input/Output) | Pipe cargo into/out of a route | No electrical connection | 50 m³ |
+| Item (In) / Item (Out) | Belt cargo into/out of a route | No electrical connection | 64 individual items |
+| Fluid (In) / Fluid (Out) | Pipe cargo into/out of a route | No electrical connection | 50 m³ |
 | Teleporter Hub | Optional channel management | 5 MW | None |
 | Personnel Teleporter | Pioneer travel | 50 MW at each end | None |
 
