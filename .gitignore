@@ -3,9 +3,12 @@ TeleportLogistics/Intermediate/
 TeleportLogistics/Saved/
 TeleportLogistics/DerivedDataCache/
 dist/
-reports/icon-debug/
 .DS_Store
 __pycache__/
 .toolchains/
 node_modules/
 .claude/settings.local.json
+# Dated engineering records and the publication kit. Both are kept on disk and
+# go out in the source and kit archives; neither belongs in the public tree.
+reports/
+docs/publishing/

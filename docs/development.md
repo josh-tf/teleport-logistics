@@ -97,4 +97,4 @@ python3 scripts/package-release.py
 
 The second command verifies manifests, expected binaries/cooked containers, unsafe/duplicate paths and CRCs, then writes combined Windows/client-server archives and SHA256SUMS. `SHA256SUMS` lists only the archives produced by that run, so run `package-source.py` first for the source zip to appear in it, and move superseded archives out of `dist/` before a release build. The source handoff needs a `LICENSE` at the repo root and excludes toolchains, binaries, intermediate files, node_modules and `reports/model-renders`. The combined archive is the SMR upload artifact, not the source archive.
 
-Read the [publication kit](publishing/README.md) and [release validation](validation.md) before upload.
+Read the publication kit, which ships in the kit archive rather than in this tree, and [release validation](validation.md) before upload.

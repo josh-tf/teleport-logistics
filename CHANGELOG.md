@@ -17,9 +17,8 @@ material scalar and subobject names use the `Teleporter` spelling, matching the 
 Hovering an endpoint shows the channel and route it is wired to, below the use prompt, and names the building
 only when you have given it one of your own. Identification plates are lettered for the current building names.
 
-Historical reports under `reports/` keep the names that were current on their dates.
 
 ## Earlier versions
 
 0.5.10 is the first public release. Versions 0.3.2 through 0.5.9 were internal development builds and were never
-published. Their dated engineering records are in `reports/`.
+published. Their dated engineering records ship in the source and publication kit archives.

@@ -1,12 +1,12 @@
 # Teleport Logistics
 
-![Teleport Logistics](docs/publishing/media/banner.png)
+![Teleport Logistics](docs/media/banner.png)
 
 An unofficial mod for [Satisfactory](https://www.satisfactorygame.com/) by Coffee Stain Studios, built on [SML](https://ficsit.app/). Teleport items, fluids and Pioneers between distant parts of your factory. Use named routes for logistics and a destination directory for personal travel.
 
 The banner is a studio render of the authored meshes, not an in-game screenshot.
 
-Current candidate: **0.5.10**, built for Satisfactory **CL502094**, SML **3.12.0** and CSS Unreal **5.6.1**. Windows Steam/Epic client and Windows dedicated-server packages are the release targets. See the [release audit](reports/0.5.10-release-audit.md) for verified checks and remaining retail-game acceptance.
+Current candidate: **0.5.10**, built for Satisfactory **CL502094**, SML **3.12.0** and CSS Unreal **5.6.1**. Windows Steam/Epic client and Windows dedicated-server packages are the release targets. Retail-game acceptance is still being completed.
 
 ## Get started
 
@@ -54,7 +54,7 @@ bash scripts/test.sh
 
 Runs the production scheduler with address/undefined-behaviour sanitizers, randomized conservation scenarios, source/content checks, connector/LOD validation and archive regression tests. Leak detection is off by default; run `ASAN_OPTIONS=detect_leaks=1 bash scripts/test.sh` to enable it. Native SDK tests and actual game tests are separate.
 
-[Build instructions](docs/development.md) · [Architecture](docs/architecture.md) · [Publication kit](docs/publishing/README.md)
+[Build instructions](docs/development.md) · [Architecture](docs/architecture.md)
 
 The offline [model viewer](tools/model-viewer/README.md) contains all six authored models. Its factory materials approximate the game shader; it is not evidence of in-game rendering.
 

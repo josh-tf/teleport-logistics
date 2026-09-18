@@ -1,6 +1,6 @@
 > Historical design record. For current behaviour see [architecture](architecture.md), [player guide](player-guide.md) and [release acceptance](validation.md).
 
-> Implemented in TeleportLogistics 0.4.0 using the supplied layout from `design/reference-ui/`, SFUIKIT panels and native Satisfactory window/actions. This document preserves the design requirements; current behavior and validation limits are in `reports/0.4.0-ui-and-connectors.md`.
+> Implemented in TeleportLogistics 0.4.0 using the supplied layout from `design/reference-ui/`, SFUIKIT panels and native Satisfactory window/actions. This document preserves the design requirements; current behavior and validation limits are in the 0.4.0 UI report, which ships in the source archive.
 
 # TeleportLogistics native UI design handoff
 

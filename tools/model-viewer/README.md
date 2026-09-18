@@ -27,4 +27,4 @@ loading, keyboard operation, and small-screen layout using local Chromium.
 
 Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use an existing Chromium installation.
 
-Generate the listing banner and six transparent renders with `node tools/model-viewer/publication-media.mjs`. Output is `docs/publishing/media/`; the banner is explicitly a model preview.
+Generate the listing banner and six transparent renders with `node tools/model-viewer/publication-media.mjs`. Output is `docs/publishing/media/`, which is kept out of the tracked tree; the banner is explicitly a model preview.

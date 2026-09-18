@@ -12,7 +12,11 @@ out.parent.mkdir(exist_ok=True)
 excluded = {"Binaries", "Intermediate", "Saved", "DerivedDataCache", "__pycache__",
             "node_modules", "model-renders"}
 with ZipFile(out, "w", ZIP_DEFLATED) as archive:
+    # reports and docs/publishing are untracked: they are kept locally and shipped
+    # here, so a clean checkout simply has nothing to add for them.
     for folder in ("TeleportLogistics", "scripts", "tests", "docs", "reports", "assets", "design", "tools"):
+        if not (root / folder).is_dir():
+            continue
         for path in sorted((root / folder).rglob("*")):
             if path.is_file() and not excluded.intersection(path.parts):
                 archive.write(path, path.relative_to(root))

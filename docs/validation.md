@@ -1,6 +1,6 @@
 # Release acceptance: TeleportLogistics 0.5.10
 
-Automated results are recorded in the [release audit](../reports/0.5.10-release-audit.md). Historical reports apply only to their stated builds. Startup was confirmed after the 0.5.5 fix; reward and UI screenshots are in `reports/`.
+Automated results are recorded in the release audit, which ships in the source and publication kit archives rather than in this tree. Historical reports apply only to their stated builds. Startup was confirmed after the 0.5.5 fix; reward and UI screenshots ship with the source archive.
 
 Record pass/fail, game build, mod version, test mode, save name and evidence for each row. These retail checks are **pending**, not silently inferred from SDK tests.
 
