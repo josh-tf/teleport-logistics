@@ -38,7 +38,7 @@ Unlocks personal travel between powered Personnel Teleporters.
 
 ## Your first route
 
-1. Build an Input and an Output.
+1. Build an **Item (In)** and an **Item (Out)** from the **Teleporter** category.
 2. Press **E** on each. Keep the **Default** channel, enter the same route name, and apply.
 3. Feed the Input with a belt or pipe and connect the Output to your factory.
 
@@ -58,7 +58,7 @@ More on naming, searching and reassigning: [Channels and routes](https://github.
 
 ### Fluids
 
-Fluid routes keep each fluid type separate and expose the local buffer. Flushing is explicit and discards the local buffer only. Your pipe network is untouched.
+Fluid routes keep each fluid type separate and expose the local buffer. Flushing is explicit, asks first, and discards the local buffer only. Your pipe network is untouched. On item endpoints nothing is ever destroyed: you take buffered items straight into your inventory.
 
 <a href="https://placehold.co/1600x900/1b1b1b/e9e9e9/png?text=7%2F10++Fluids%0APipes%2C+fluid+buffer+open&slot=IMG_FLUID_ROUTE"><img alt="Fluid Input and Output connected by pipes with the endpoint buffer open" src="https://placehold.co/1600x900/1b1b1b/e9e9e9/png?text=7%2F10++Fluids%0APipes%2C+fluid+buffer+open&slot=IMG_FLUID_ROUTE" width="480"></a>
 

@@ -525,6 +525,9 @@ def item_terminal(output):
                 (56, 4, 84), "frame", 2)
 
     screen_panel(prefix + "_console", (-55, -140, 184), 60, 66, accent)
+    # Repeat the glyph on the opposite face so it reads from either approach in
+    # world, and so a build-menu capture can frame the building from either side.
+    screen_panel(prefix + "_console_far", (-55, 140, 184), 60, 66, accent)
     # The panel face is at Y=124.5. Embed these small slots into that face;
     # the former six-column array at Y=140.5 floated beyond the narrow panel.
     vents(prefix + "_vent", (-34, 123.5, 174), 3, 3)
@@ -640,6 +643,9 @@ def fluid_terminal(output):
             box(prefix + f"_receiver_service_slot_{z}", (-106, 0, z),
                 (1.4, 54, 4), "rubber", .3)
     screen_panel(prefix + "_console", (-48, -112, 171), 60, 72, accent)
+    # Repeat the glyph on the opposite face so it reads from either approach in
+    # world, and so a build-menu capture can frame the building from either side.
+    screen_panel(prefix + "_console_far", (-48, 112, 171), 60, 72, accent)
     box(prefix + "_console_label_bezel", (-48, -112, 226), (80, 8, 26), "frame", 2)
     identification_plate(prefix + "_id", (-48, -116.3, 226), 73,
                          "FLUID TELEPORTER (Output)" if output else "FLUID TELEPORTER (Input)", 9)

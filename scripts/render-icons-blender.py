@@ -142,6 +142,8 @@ def bounds(objects):
 
 LENS = 85.0
 SENSOR = 36.0
+# Stock build-menu captures sit a little inside the tile rather than touching it.
+FRAME_FILL = 0.88
 
 
 def camera_distance(target, direction, low, high, framed=None):
@@ -154,7 +156,7 @@ def camera_distance(target, direction, low, high, framed=None):
     half = math.atan(SENSOR / (2 * LENS))
     if framed is not None:
         return (framed / 2) / math.tan(half)
-    limit = math.tan(half) * 0.98
+    limit = math.tan(half) * FRAME_FILL
     corners = [Vector((x, y, z))
                for x in (low.x, high.x) for y in (low.y, high.y) for z in (low.z, high.z)]
     forward = -direction
@@ -217,7 +219,7 @@ def render(name):
         target = Vector(tuple(float(v) for v in os.environ["TELEPORTLOGISTICS_RENDER_TARGET"].split(",")))
         framed = float(os.environ.get("TELEPORTLOGISTICS_RENDER_SCALE", "1.2"))
     direction = Vector(tuple(float(value) for value in os.environ.get(
-        "TELEPORTLOGISTICS_RENDER_DIRECTION", "1.30,-1.50,2.05").split(","))).normalized()
+        "TELEPORTLOGISTICS_RENDER_DIRECTION", "1.30,1.50,1.01").split(","))).normalized()
     camera.location = target + direction * camera_distance(target, direction, low, high, framed)
     look_at(camera, target)
 

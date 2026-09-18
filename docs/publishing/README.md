@@ -80,10 +80,33 @@ decide not to fill rather than leaving the placeholder in.
 ### Wiki pages the description links to
 
 The description links out to the repository wiki for detail that does not belong on a store page.
-Each page must exist before the listing is published, or the links will dead-end:
-`First-Route`, `Buildings`, `Channels-and-Routes`, `Hubs`, `Personnel-Teleporters`,
-`Throughput-and-Power`, `Multiplayer-and-Dedicated-Servers`, `FAQ`.
-The changelog and issue links resolve only once the repository has been pushed.
+Every page is written and lives in [`docs/wiki/`](../wiki), one file per wiki page, named exactly as
+the wiki slug so it can be copied across without renaming:
+
+| File | Wiki page | Linked from |
+| --- | --- | --- |
+| `Home.md` | `Home` | the wiki landing page, and "Full documentation" in the description |
+| `First-Route.md` | `First-Route` | "Your first route" |
+| `Buildings.md` | `Buildings` | "What you get" |
+| `Channels-and-Routes.md` | `Channels-and-Routes` | "Channels and routes" |
+| `Hubs.md` | `Hubs` | "Hubs" |
+| `Personnel-Teleporters.md` | `Personnel-Teleporters` | "Personal travel" |
+| `Throughput-and-Power.md` | `Throughput-and-Power` | "Power and capacity" |
+| `Multiplayer-and-Dedicated-Servers.md` | `Multiplayer-and-Dedicated-Servers` | "Compatibility" |
+| `FAQ.md` | `FAQ` | "Compatibility" |
+
+GitHub derives a wiki page's title from its filename, so `Channels-and-Routes.md` becomes
+`Channels-and-Routes` and the description's links resolve. Inside the pages, links are bare slugs
+(`[Buildings](Buildings)`), which is the form GitHub wikis resolve internally; they will not work if
+the files are read anywhere else.
+
+Every page must exist before the listing is published, or the links dead-end. The changelog and
+issue links resolve only once the repository has been pushed.
+
+The wiki pages carry their own image slots as `<!-- IMG: WIKI_* -->` comments, placed where a capture
+belongs. They are comments, so a page reads correctly with none of them filled, and each can be
+replaced with an uploaded image as you take it. None is required for launch; `WIKI_FIRST_*` earns its
+place first, since that page is where a new player lands.
 
 Historical bug screenshots are not publication screenshots.
 
