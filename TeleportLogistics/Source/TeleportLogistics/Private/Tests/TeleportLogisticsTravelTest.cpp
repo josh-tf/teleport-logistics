@@ -19,9 +19,6 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTeleportLogisticsTravelTest, "TeleportLogistic
 bool FTeleportLogisticsTravelTest::RunTest(const FString &)
 {
     auto *Hub = GetMutableDefault<ATeleportLogisticsTravelHub>();
-    auto *Hologram = GetDefault<ATeleportLogisticsTravelHologram>();
-    TestNotNull(TEXT("Placement arrow shaft retained for cooking"), Hologram->ShaftMesh.Get());
-    TestNotNull(TEXT("Placement arrow head retained for cooking"), Hologram->TipMesh.Get());
     Hub->Removed = true;
     TestFalse(TEXT("Dismantled Personnel hub is excluded immediately"), Hub->DirectoryActive());
     Hub->Removed = false;

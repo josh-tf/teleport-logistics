@@ -280,14 +280,22 @@ def detail_plane(name, centre, width, height, tile, rotation=(math.pi / 2, 0, 0)
 def identification_plate(prefix, centre, width, body, size=8):
     """Two-triangle label in a shared masked atlas, 0.8mm off its plate."""
     x,y,z=centre
+    # Offset and facing follow the side, as screen_panel does. A hardcoded -Y offset
+    # puts the far plate's label inboard, behind its own backing box, so it reads
+    # blank; and a bare -pi/2 would carry its up axis to -Z and print upside down.
+    outward = -1 if y < 0 else 1
     box(prefix+"_plate",centre,(width,1.4,22),"shell",.6)
     tile=7 if body=="PERSONNEL TELEPORTER" else 4 if body=="TELEPORTER HUB" else (2 if 'FLUID' in body else 0)+(1 if 'Output' in body else 0)
-    # Atlas is square; compress unused top/bottom space with a tight V crop.
-    obj=detail_plane(prefix+"_label",(x,y-.78,z),width-6,18,tile)
+    # Sample only the band the atlas draws into. It matches the plate's own 4.5:1
+    # aspect, so the mark and lettering are not squashed; keep these two in step
+    # with BAND_TOP and BAND_HEIGHT in generate-detail-atlas.py.
+    obj=detail_plane(prefix+"_label",(x,y+outward*.78,z),width-6,18,tile,
+                     (math.pi/2,0,0) if outward < 0 else (math.pi/2,0,math.pi))
     row=tile//4
+    band_top,band_height=176/512,114/512
     for loop in obj.data.uv_layers.active.data:
         local=(1-row/2-loop.uv.y)*2
-        loop.uv.y=1-(row+(0.27+local*.39))/2
+        loop.uv.y=1-(row+(band_top+local*band_height))/2
 
 
 def vendor_part(source_name, object_name, location, rotation=(0, 0, 0)):
@@ -439,6 +447,24 @@ def item_terminal(output):
     common_base(prefix)
     connector = vendor_part("FactoryBelt_Out" if output else "FactoryBelt_In",
                             prefix + "_NativeConnector", (160, 0, 100))
+    # The vendored liner runs from x=120 to the front face, and the housing shell
+    # stopped at the base plate, leaving its painted rear flank bare along the whole
+    # bay. Wrap the rear 40 cm so only the collar past x=160 stands proud, the way a
+    # stock machine seats a belt connector.
+    # Overlap the housing wall rather than butting against it: a box only carries
+    # vertices at its corners, so the exact wall face is not measurable from the
+    # export, and an overlap inside a solid model costs nothing. Outer face matches
+    # the shell's own 138 so the wrap does not stand out as a ledge.
+    # Face-based coverage of the flank zone shows the body ending at x=58 and the
+    # connector region starting at x=80, so the wrap has to bridge from 56 to the
+    # collar rather than sit only in front of it. Measured by face span: a box only
+    # carries corner vertices, so a vertex scan reports the middle of a slab empty.
+    for side in (-1, 1):
+        box(prefix + f"_collar_flank_{side}", (108, side * 122, 166), (104, 32, 232), "shell", 3)
+    # No cap: the roof already spans this depth, and a plate here read as a blank
+    # slab over the whole front half from above.
+    box(prefix + "_collar_sill", (108, 0, 56), (104, 250, 24), "shell", 3)
+
     # The reference collar includes a flat dark end plate 7.5 cm behind its
     # origin. Our own circular field terminates the tunnel, so remove only that
     # plate; keep the native rim, UVs and snap geometry intact.
@@ -527,10 +553,15 @@ def item_terminal(output):
             box(prefix + f"_receiver_side_cover_{side}", (30, side * 110, 177),
                 (56, 4, 84), "frame", 2)
 
-    screen_panel(prefix + "_console", (-55, -140, 184), 60, 66, accent)
+    # The roof reached |y|=120 while the shell runs to 146, leaving an open slot
+    # along both top edges from x=-110 to 40. Measured by projecting near-horizontal
+    # roof faces onto xy and looking for uncovered cells.
+    for side in (-1, 1):
+        box(prefix + f"_roof_edge_{side}", (-30, side * 133, 278), (162, 27, 17), "shell", 2)
+    screen_panel(prefix + "_console", (-34, -128.5, 158), 60, 66, accent)
     # Repeat the glyph on the opposite face so it reads from either approach in
     # world, and so a build-menu capture can frame the building from either side.
-    screen_panel(prefix + "_console_far", (-55, 140, 184), 60, 66, accent)
+    screen_panel(prefix + "_console_far", (-34, 128.5, 158), 60, 66, accent)
     # The panel face is at Y=124.5. Embed these small slots into that face;
     # the former six-column array at Y=140.5 floated beyond the narrow panel.
     vents(prefix + "_vent", (-34, 123.5, 174), 3, 3)
@@ -538,10 +569,10 @@ def item_terminal(output):
     # suspending individual letters above it. Native collar arrows remain the
     # primary flow markings; this small plate identifies the device at hand.
     label = "ITEM TELEPORTER (Output)" if output else "ITEM TELEPORTER (Input)"
-    box(prefix + "_console_label_bezel", (-55, -140, 234), (94, 8, 30), "frame", 2)
-    identification_plate(prefix + "_id", (-55, -144.3, 235), 87, label, 9)
-    box(prefix + "_console_label_bezel_far", (-55, 140, 234), (94, 8, 30), "frame", 2)
-    identification_plate(prefix + "_id_far", (-55, 144.3, 235), 87, label, 9)
+    box(prefix + "_console_label_bezel", (-34, -128.5, 234), (94, 8, 30), "frame", 2)
+    identification_plate(prefix + "_id", (-34, -133.2, 235), 87, label, 9)
+    box(prefix + "_console_label_bezel_far", (-34, 128.5, 234), (94, 8, 30), "frame", 2)
+    identification_plate(prefix + "_id_far", (-34, 133.2, 235), 87, label, 9)
     hose(prefix + "_loom", [(-75, -116, 78), (-98, -126, 133), (-76, -118, 210)], 3, "rubber")
     hose(prefix + "_data", [(12, -116, 82), (34, -125, 133), (20, -118, 192)], 2.4, "steel")
     beacon(prefix+"_status", 4, 109, 260, 62)
@@ -568,6 +599,14 @@ def fluid_terminal(output):
     common_base(prefix)
     vendor_part("FactoryPipe_Out" if output else "FactoryPipe_In",
                 prefix + "_NativeConnector", (160, 0, 175))
+    # The pipe liner's rear flank was bare from the base plate up. It is perfectly
+    # round, radius 100 about the connector axis, so a cylindrical flange wraps it
+    # and matches the vessel's language; a box bezel here reads as a square inlet.
+    cylinder(prefix + "_collar_boss", (135, 0, 175), 112, 50, "shell", axis="x",
+             vertices=36, bevel=2)
+    torus(prefix + "_collar_rib", (158, 0, 175), 114, 5, "frame", major_segments=36,
+          axis="x")
+
 
     cylinder(prefix + "_vessel", (-35, 0, 166), 66, 196, "shell", vertices=36, bevel=2)
     sphere(prefix + "_vessel_lower", (-35, 0, 68), (66, 66, 28), "shell", 28, 14)
@@ -647,15 +686,15 @@ def fluid_terminal(output):
         for z in (137, 161, 185, 209):
             box(prefix + f"_receiver_service_slot_{z}", (-106, 0, z),
                 (1.4, 54, 4), "rubber", .3)
-    screen_panel(prefix + "_console", (-48, -112, 171), 60, 72, accent)
+    screen_panel(prefix + "_console", (-38, -110.5, 174), 60, 72, accent)
     # Repeat the glyph on the opposite face so it reads from either approach in
     # world, and so a build-menu capture can frame the building from either side.
-    screen_panel(prefix + "_console_far", (-48, 112, 171), 60, 72, accent)
+    screen_panel(prefix + "_console_far", (-38, 110.5, 174), 60, 72, accent)
     label = "FLUID TELEPORTER (Output)" if output else "FLUID TELEPORTER (Input)"
-    box(prefix + "_console_label_bezel", (-48, -112, 226), (80, 8, 26), "frame", 2)
-    identification_plate(prefix + "_id", (-48, -116.3, 226), 73, label, 9)
-    box(prefix + "_console_label_bezel_far", (-48, 112, 226), (80, 8, 26), "frame", 2)
-    identification_plate(prefix + "_id_far", (-48, 116.3, 226), 73, label, 9)
+    box(prefix + "_console_label_bezel", (-38, -110.5, 226), (80, 8, 26), "frame", 2)
+    identification_plate(prefix + "_id", (-38, -115.2, 226), 73, label, 9)
+    box(prefix + "_console_label_bezel_far", (-38, 110.5, 226), (80, 8, 26), "frame", 2)
+    identification_plate(prefix + "_id_far", (-38, 115.2, 226), 73, label, 9)
     # The stock pipe connector already carries an authored flow-direction decal;
     # the coloured containment coils reinforce it without a floating sign.
     sign_mount(prefix,-130,0,247,120,44,anchor_x=-108)
@@ -893,7 +932,7 @@ def travel_hub():
     box("Travel_crown_trim",(54,0,416),(8,360,14),"paint_primary",2)
     box("Travel_console_stand",(170,-205,90),(90,86,130),"frame",4)
     box("Travel_console_armour",(170,-250,90),(72,5,86),"paint_primary",2)
-    screen_panel("Travel_console",(170,-252,139),70,55,tile=4)
+    screen_panel("Travel_console",(170,-252,90),70,55,tile=4)
     for x in (131,209):
         box(f"Travel_label_bracket_{x}",(x,-251,170),(4,12,42),"steel",.6)
     identification_plate("Travel_label",(170,-256,185),100,"PERSONNEL TELEPORTER")

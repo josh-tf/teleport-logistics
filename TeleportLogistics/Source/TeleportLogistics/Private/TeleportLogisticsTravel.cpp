@@ -22,7 +22,7 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
     bReplicates = true;
     mIsUseable = true;
     mInteractWidgetSoftClass = UTeleportLogisticsTravelWidget::StaticClass();
-    mHologramClass = ATeleportLogisticsTravelHologram::StaticClass();
+    mHologramClass = AFGFactoryHologram::StaticClass();
     mDisplayName = NSLOCTEXT("TeleportLogistics", "PersonnelHub", "Personnel Teleporter");
     mDescription =
         NSLOCTEXT("TeleportLogistics", "PersonnelHubDesc",
@@ -417,33 +417,4 @@ void ATeleportLogisticsTravelHub::OnPlayerTeleportComplete_Implementation(AFGCha
                 Controller->ClientSetRotation(Facing, true);
             }
     });
-}
-ATeleportLogisticsTravelHologram::ATeleportLogisticsTravelHologram()
-{
-    // Retained CDO references let cooking discover these dependencies.
-    ShaftMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
-    TipMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone"));
-}
-void ATeleportLogisticsTravelHologram::BeginPlay()
-{
-    Super::BeginPlay();
-    if (IsRunningDedicatedServer())
-        return;
-    // Runtime-only cue, not a component copied into the built machine.
-    auto Add = [this](const TCHAR *Name, UStaticMesh *Geometry, FVector At, FVector Scale,
-                      FRotator Rotation) {
-        auto *Part = NewObject<UStaticMeshComponent>(this, Name);
-        Part->SetStaticMesh(Geometry);
-        Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        Part->SetCastShadow(false);
-        Part->SetupAttachment(GetRootComponent());
-        Part->SetRelativeLocation(At);
-        Part->SetRelativeScale3D(Scale);
-        Part->SetRelativeRotation(Rotation);
-        Part->SetMaterial(0, mValidPlacementMaterial);
-        Part->RegisterComponent();
-    };
-    Add(TEXT("ExitArrowShaft"), ShaftMesh, FVector(225, 0, 65), FVector(1.1, .15, .15),
-        FRotator::ZeroRotator);
-    Add(TEXT("ExitArrowTip"), TipMesh, FVector(300, 0, 65), FVector(.5, .5, .6), FRotator(90, 0, 0));
 }

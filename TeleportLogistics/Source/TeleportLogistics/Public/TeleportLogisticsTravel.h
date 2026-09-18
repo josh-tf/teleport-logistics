@@ -228,15 +228,3 @@ class TELEPORTLOGISTICS_API UTeleportLogisticsTravelWidget : public UFGInteractW
     FReply Close();
 };
 
-UCLASS()
-class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHologram : public AFGFactoryHologram
-{
-    GENERATED_BODY()
-  public:
-    ATeleportLogisticsTravelHologram();
-    UPROPERTY()
-    TObjectPtr<UStaticMesh> ShaftMesh;
-    UPROPERTY()
-    TObjectPtr<UStaticMesh> TipMesh;
-    virtual void BeginPlay() override;
-};
