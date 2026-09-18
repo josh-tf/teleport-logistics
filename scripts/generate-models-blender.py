@@ -357,8 +357,11 @@ def screen_panel(prefix, location, width=60, height=60, accent="input", tile=Non
         tile = (2 if prefix.startswith("Fluid") else 0) + (1 if accent == "output" else 0)
     box(prefix + "_housing", (x, y, z), (width + 12, 8, height + 12), "frame", 3)
     box(prefix + "_bezel", (x, y + outward * 4, z), (width+5, 2, height+5), "steel", 1)
+    # A bare -pi/2 faces +Y but carries the quad's up axis to -Z, so the glyph reads
+    # upside down. Rotate the -Y orientation about Z instead, which turns the normal
+    # without touching up. Blender applies XYZ in order, so this is Rz * Rx.
     screen_face(prefix + "_glass", (x, y + outward * 5.2, z), width, height, tile,
-                (math.pi/2 if outward < 0 else -math.pi/2, 0, 0))
+                (math.pi/2, 0, 0) if outward < 0 else (math.pi/2, 0, math.pi))
     for dx in (-width/2-2, width/2+2):
         for dz in (-height/2-2, height/2+2):
             cylinder(prefix+f"_screw_{dx}_{dz}", (x+dx,y+outward*5.3,z+dz),
@@ -534,9 +537,11 @@ def item_terminal(output):
     # A bezel extension seats the label directly on the console, instead of
     # suspending individual letters above it. Native collar arrows remain the
     # primary flow markings; this small plate identifies the device at hand.
+    label = "ITEM TELEPORTER (Output)" if output else "ITEM TELEPORTER (Input)"
     box(prefix + "_console_label_bezel", (-55, -140, 234), (94, 8, 30), "frame", 2)
-    identification_plate(prefix + "_id", (-55, -144.3, 235), 87,
-                         "ITEM TELEPORTER (Output)" if output else "ITEM TELEPORTER (Input)", 9)
+    identification_plate(prefix + "_id", (-55, -144.3, 235), 87, label, 9)
+    box(prefix + "_console_label_bezel_far", (-55, 140, 234), (94, 8, 30), "frame", 2)
+    identification_plate(prefix + "_id_far", (-55, 144.3, 235), 87, label, 9)
     hose(prefix + "_loom", [(-75, -116, 78), (-98, -126, 133), (-76, -118, 210)], 3, "rubber")
     hose(prefix + "_data", [(12, -116, 82), (34, -125, 133), (20, -118, 192)], 2.4, "steel")
     beacon(prefix+"_status", 4, 109, 260, 62)
@@ -646,9 +651,11 @@ def fluid_terminal(output):
     # Repeat the glyph on the opposite face so it reads from either approach in
     # world, and so a build-menu capture can frame the building from either side.
     screen_panel(prefix + "_console_far", (-48, 112, 171), 60, 72, accent)
+    label = "FLUID TELEPORTER (Output)" if output else "FLUID TELEPORTER (Input)"
     box(prefix + "_console_label_bezel", (-48, -112, 226), (80, 8, 26), "frame", 2)
-    identification_plate(prefix + "_id", (-48, -116.3, 226), 73,
-                         "FLUID TELEPORTER (Output)" if output else "FLUID TELEPORTER (Input)", 9)
+    identification_plate(prefix + "_id", (-48, -116.3, 226), 73, label, 9)
+    box(prefix + "_console_label_bezel_far", (-48, 112, 226), (80, 8, 26), "frame", 2)
+    identification_plate(prefix + "_id_far", (-48, 116.3, 226), 73, label, 9)
     # The stock pipe connector already carries an authored flow-direction decal;
     # the coloured containment coils reinforce it without a floating sign.
     sign_mount(prefix,-130,0,247,120,44,anchor_x=-108)

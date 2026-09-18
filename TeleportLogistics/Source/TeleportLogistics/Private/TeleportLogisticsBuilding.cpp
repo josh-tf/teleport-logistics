@@ -223,8 +223,10 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     Fog->SetRelativeLocation(FVector(190, 0, FogCentreZ));
     // The quad is authored in its own XZ plane, so with no yaw it faces along Y and
     // a player looking into the connector sees it edge-on. Yawing puts its normal on
-    // the belt axis, after which local X reads as width and local Z as height.
-    Fog->SetRelativeRotation(FRotator(0, 90, 0));
+    // the belt axis, after which local X reads as width and local Z as height. The
+    // material is single-sided: +90 aims the normal at -X, into the building, and the
+    // fade is then only visible from behind it. -90 aims it out along the belt.
+    Fog->SetRelativeRotation(FRotator(0, -90, 0));
     if (FogMesh.Succeeded())
     {
         const FVector Extent = FogMesh.Object->GetBounds().BoxExtent;
