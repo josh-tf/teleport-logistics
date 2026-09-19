@@ -43,6 +43,8 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
         auto *Point = CreateDefaultSubobject<UFGAttachmentPointComponent>(TEXT("SignMount"));
         Point->SetRelativeLocation(FVector(-59, 0, 416));
         Point->SetRelativeRotation(FRotator(0, 180, 0));
+        // Buildable only; see ATeleportLogisticsBuilding::AddSignMount.
+        Point->mUsage = EAttachmentPointUsage::EAPU_BuildableOnly;
         if (SignType.Succeeded())
             Point->mType = SignType.Class;
         else

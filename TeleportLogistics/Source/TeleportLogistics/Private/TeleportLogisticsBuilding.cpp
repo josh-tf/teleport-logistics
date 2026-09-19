@@ -66,6 +66,11 @@ void ATeleportLogisticsBuilding::AddSignMount(const FVector &At)
     Point->SetRelativeLocation(At);
     // The pad faces -X, so the point's forward turns to match it.
     Point->SetRelativeRotation(FRotator(0, 180, 0));
+    // Buildable only, never the hologram. The default creates the point on both, so
+    // the machine being placed carries a sign point of its own and snaps itself to
+    // sign areas on storage containers and the like. This pad is a target for signs,
+    // not a way for the machine to attach to something else.
+    Point->mUsage = EAttachmentPointUsage::EAPU_BuildableOnly;
     if (SignType.Succeeded())
         Point->mType = SignType.Class;
     else
