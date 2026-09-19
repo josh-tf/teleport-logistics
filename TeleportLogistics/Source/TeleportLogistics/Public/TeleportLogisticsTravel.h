@@ -223,7 +223,7 @@ class TELEPORTLOGISTICS_API UTeleportLogisticsTravelWidget : public UFGInteractW
     int32 RequestedPage = 0;
     double DirectoryRequestedAt = 0;
     bool PickingIcons = false;
-    int32 IconPage = 0, IconTotal = 0;
+    int32 IconTotal = 0;
     TMap<int32, TSharedPtr<FSlateBrush>> IconBrushes;
     UPROPERTY()
     TArray<TObjectPtr<UObject>> IconResources;

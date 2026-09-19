@@ -152,7 +152,6 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
                          .OnTextChanged_Lambda([this](const FText &) {
                              if (PickingIcons)
                              {
-                                 IconPage = 0;
                                  ShowIcons();
                                  return;
                              }
@@ -169,15 +168,11 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
     auto Footer = SNew(SHorizontalBox);
     Footer->AddSlot().AutoWidth()[SNew(SButton)
                                       .ButtonStyle(&TravelButton())
-                                      .IsEnabled_Lambda(
-                                          [this] { return (PickingIcons ? IconPage : Page) > 0 && !Pending; })
+                                      .Visibility_Lambda([this] {
+                                          return PickingIcons ? EVisibility::Collapsed : EVisibility::Visible;
+                                      })
+                                      .IsEnabled_Lambda([this] { return Page > 0 && !Pending; })
                                       .OnClicked_Lambda([this] {
-                                          if (PickingIcons)
-                                          {
-                                              --IconPage;
-                                              ShowIcons();
-                                              return FReply::Handled();
-                                          }
                                           --Page;
                                           Selected.Invalidate();
                                           LastList.Empty();
@@ -188,26 +183,23 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
         .FillWidth(1)
         .HAlign(HAlign_Center)
         .VAlign(VAlign_Center)[SNew(STextBlock).Font(TravelFont(13)).Text_Lambda([this] {
+            if (PickingIcons)
+                return FText::FromString(
+                    IconTotal > 400
+                        ? FString::Printf(TEXT("First 400 of %d icons · search to narrow"), IconTotal)
+                        : FString::Printf(TEXT("%d icon%s"), IconTotal, IconTotal == 1 ? TEXT("") : TEXT("s")));
             return FText::FromString(FString::Printf(
-                TEXT("Page %d / %d · %d %s"), (PickingIcons ? IconPage : Page) + 1,
-                FMath::Max(1, FMath::DivideAndRoundUp(PickingIcons ? IconTotal : Data.Total,
-                                                      PickingIcons ? 42 : 32)),
-                PickingIcons ? IconTotal : Data.Total, PickingIcons ? TEXT("icons") : TEXT("destinations")));
+                TEXT("Page %d / %d · %d destinations"), Page + 1,
+                FMath::Max(1, FMath::DivideAndRoundUp(Data.Total, 32)), Data.Total));
         })];
     Footer->AddSlot().AutoWidth()[SNew(SButton)
                                       .ButtonStyle(&TravelButton())
-                                      .IsEnabled_Lambda([this] {
-                                          return (PickingIcons ? (IconPage + 1) * 42 < IconTotal
-                                                               : (Page + 1) * 32 < Data.Total) &&
-                                                 !Pending;
+                                      .Visibility_Lambda([this] {
+                                          return PickingIcons ? EVisibility::Collapsed : EVisibility::Visible;
                                       })
+                                      .IsEnabled_Lambda(
+                                          [this] { return (Page + 1) * 32 < Data.Total && !Pending; })
                                       .OnClicked_Lambda([this] {
-                                          if (PickingIcons)
-                                          {
-                                              ++IconPage;
-                                              ShowIcons();
-                                              return FReply::Handled();
-                                          }
                                           ++Page;
                                           Selected.Invalidate();
                                           LastList.Empty();
@@ -425,7 +417,6 @@ const FSlateBrush *UTeleportLogisticsTravelWidget::IconBrush(int32 Id)
 void UTeleportLogisticsTravelWidget::ToggleIcons()
 {
     PickingIcons = !PickingIcons;
-    IconPage = 0;
     LastList.Empty();
     Selected.Invalidate();
     Search->SetText(FText::GetEmpty());
@@ -459,14 +450,31 @@ void UTeleportLogisticsTravelWidget::ShowIcons()
         return;
     }
     TArray<FIconData> Icons;
-    const FString Query = Search->GetText().ToString();
+    const FString Query = Search->GetText().ToString().TrimStartAndEnd();
+    // IconName is only authored for some icons; the rest take their name from the
+    // descriptor they were generated from, so matching on it alone finds almost
+    // nothing. The soft references carry the asset names without needing a load,
+    // and those are what a player's search terms actually look like.
+    const auto Matches = [&Query](const FIconData &I) {
+        if (Query.IsEmpty())
+            return true;
+        if (I.IconName.ToString().Contains(Query))
+            return true;
+        if (!I.ItemDescriptor.IsNull() && I.ItemDescriptor.GetAssetName().Contains(Query))
+            return true;
+        return !I.Texture.IsNull() && I.Texture.GetAssetName().Contains(Query);
+    };
     for (const auto &I : DB->GetAllIconData())
-        if (!I.Hidden && !I.Animated && (!I.SearchOnly || !Query.IsEmpty()) &&
-            (Query.IsEmpty() || I.IconName.ToString().Contains(Query)))
+        if (!I.Hidden && !I.Animated && (!I.SearchOnly || !Query.IsEmpty()) && Matches(I))
             Icons.Add(I);
     Icons.Sort([](const FIconData &A, const FIconData &B) { return A.IconName.CompareTo(B.IconName) < 0; });
     IconTotal = Icons.Num();
-    IconPage = FMath::Clamp(IconPage, 0, FMath::Max(0, (IconTotal - 1) / 42));
+    // The grid already lives in a scroll box, and only two of its rows fit, so
+    // paging on top of that meant scrolling a page, paging, then scrolling back.
+    // Show the lot and let the scroll box do the work; the cap only bounds the
+    // unfiltered case, and says so rather than silently truncating.
+    constexpr int32 MaxShown = 400;
+    const int32 Shown = FMath::Min(IconTotal, MaxShown);
     Rows->AddSlot().AutoHeight().Padding(0, 0, 0,
                                          8)[SNew(SButton)
                                                 .ButtonStyle(&TravelButton())
@@ -477,7 +485,7 @@ void UTeleportLogisticsTravelWidget::ShowIcons()
                                                     return FReply::Handled();
                                                 })[Caption(TEXT("Use default Personnel Teleporter icon"))]];
     TSharedPtr<SHorizontalBox> Line;
-    for (int32 N = IconPage * 42; N < FMath::Min(IconTotal, (IconPage + 1) * 42); ++N)
+    for (int32 N = 0; N < Shown; ++N)
     {
         if ((N % 7) == 0)
         {
@@ -496,7 +504,11 @@ void UTeleportLogisticsTravelWidget::ShowIcons()
                           return FReply::Handled();
                       })
                           [SNew(SBox).WidthOverride(52).HeightOverride(52)[SNew(SScaleBox).Stretch(
-                              EStretch::ScaleToFit)[SNew(SImage).Image(IconBrush(I.ID))]]]];
+                              EStretch::ScaleToFit)[SNew(SImage).Image_Lambda(
+                              // Resolved when the cell is first painted. The scroll box
+                              // culls what is off screen, so opening the picker does not
+                              // pull four hundred textures off disk at once.
+                              [this, Id = I.ID] { return IconBrush(Id); })]]]];
     }
     if (Icons.IsEmpty())
         Rows->AddSlot().AutoHeight()[Caption(TEXT("No matching icons."))];
