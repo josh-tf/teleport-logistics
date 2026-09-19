@@ -20,6 +20,12 @@
 #include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
 
+TMap<FGuid, TWeakObjectPtr<ATeleportLogisticsTravelHub>> &ATeleportLogisticsTravelHub::Live()
+{
+    // Function-local so there is no static initialisation order to reason about.
+    static TMap<FGuid, TWeakObjectPtr<ATeleportLogisticsTravelHub>> Registry;
+    return Registry;
+}
 ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
 {
     bReplicates = true;
@@ -80,17 +86,15 @@ void ATeleportLogisticsTravelHub::BeginPlay()
     {
         // Blueprint copies must not share a destination identity with a live hub.
         if (HubId.IsValid())
-            for (TActorIterator<ATeleportLogisticsTravelHub> It(GetWorld()); It; ++It)
-                if (*It != this && It->HasActorBegunPlay() && It->HubId == HubId)
-                {
+            if (const auto *Existing = Live().Find(HubId))
+                if (Existing->IsValid() && Existing->Get() != this)
                     HubId.Invalidate();
-                    break;
-                }
         if (!HubId.IsValid())
             HubId = FGuid::NewGuid();
         if (HubName.IsEmpty())
             HubName = TEXT("Personnel Teleporter ") + HubId.ToString().Left(8);
         SetPortalName(FText::FromString(HubName));
+        Live().Add(HubId, this);
         FlushNetDormancy();
         ForceNetUpdate();
     }
@@ -100,17 +104,25 @@ void ATeleportLogisticsTravelHub::BeginPlay()
 void ATeleportLogisticsTravelHub::EndPlay(const EEndPlayReason::Type Reason)
 {
     GetWorldTimerManager().ClearTimer(VisualTimer);
+    if (const auto *Registered = Live().Find(HubId); Registered && Registered->Get() == this)
+        Live().Remove(HubId);
     Super::EndPlay(Reason);
 }
 void ATeleportLogisticsTravelHub::Factory_Tick(float)
 {
     // No native pair linking, shared inventory or cross-grid power. Transport
     // uses the player's native portal state machine, not the paired factory loop.
-    if (HasAuthority() && GetPowerInfo())
-    {
-        GetPowerInfo()->SetMaximumTargetConsumption(50);
-        GetPowerInfo()->SetTargetConsumption(50);
-    }
+    if (HasAuthority())
+        if (auto *Info = GetPowerInfo())
+        {
+            // Only on change. These are constants, and writing them every frame
+            // for every hub means touching the power circuit every frame for a
+            // value that never moves.
+            if (!FMath::IsNearlyEqual(Info->GetMaximumTargetConsumption(), 50.f))
+                Info->SetMaximumTargetConsumption(50);
+            if (!FMath::IsNearlyEqual(Info->GetTargetConsumption(), 50.f))
+                Info->SetTargetConsumption(50);
+        }
 }
 bool ATeleportLogisticsTravelHub::Powered() const
 {
@@ -235,10 +247,12 @@ void UTeleportLogisticsTravelRemote::ServerDirectory_Implementation(ATeleportLog
     }
     D.Powered = Source->Powered();
     TArray<FTeleportLogisticsTravelDestination> All;
-    for (TActorIterator<ATeleportLogisticsTravelHub> It(Source->GetWorld()); It; ++It)
+    // Registered hubs only. This used to walk every actor in the world each time
+    // the directory refreshed, which is the whole save on a large factory.
+    for (const auto &Entry : ATeleportLogisticsTravelHub::Live())
     {
-        auto *Hub = *It;
-        if (Hub == Source || !Hub->DirectoryActive() || !Hub->HasActorBegunPlay() || Hub->IsTemplate() ||
+        auto *Hub = Entry.Value.Get();
+        if (!Hub || Hub == Source || !Hub->DirectoryActive() || !Hub->HasActorBegunPlay() || Hub->IsTemplate() ||
             !Hub->HubId.IsValid() ||
             (!Search.IsEmpty() && !Hub->HubName.Contains(Search, ESearchCase::IgnoreCase)))
             continue;
@@ -317,12 +331,9 @@ void UTeleportLogisticsTravelRemote::ServerTravel_Implementation(ATeleportLogist
     }
     auto *Player = GetOwnerPlayerCharacter();
     ATeleportLogisticsTravelHub *Destination = nullptr;
-    for (TActorIterator<ATeleportLogisticsTravelHub> It(Source->GetWorld()); It; ++It)
-        if (It->DirectoryActive() && It->HubId == Id)
-        {
-            Destination = *It;
-            break;
-        }
+    if (const auto *Found = ATeleportLogisticsTravelHub::Live().Find(Id))
+        if (auto *Hub = Found->Get(); Hub && Hub->DirectoryActive())
+            Destination = Hub;
     if (!Destination || Destination == Source || !Source->Available() || !Destination->Available())
     {
         ClientResult(Source, false, TEXT("Both teleporters must be powered, idle and intact."));

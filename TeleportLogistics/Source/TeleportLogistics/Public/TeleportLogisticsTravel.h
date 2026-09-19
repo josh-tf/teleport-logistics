@@ -15,6 +15,10 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     GENERATED_BODY()
   public:
     ATeleportLogisticsTravelHub();
+    /** Every hub that has begun play, so the directory and travel need not walk
+     *  the whole actor list. Game thread only, and keyed once HubId has settled. */
+    static TMap<FGuid, TWeakObjectPtr<ATeleportLogisticsTravelHub>> &Live();
+
     /** Rear pad snap target for the game's own wall signs. */
     UPROPERTY()
     TObjectPtr<class UFGAttachmentPointComponent> SignMount;
