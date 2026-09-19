@@ -6,6 +6,8 @@ The buildings snapped themselves onto sign areas of other machines while being p
 
 Cross-map travel stuttered. Both the destination directory and the journey itself searched every actor in the world to find the handful of Personnel Teleporters; hubs now register themselves as they come up and both look the destination up directly. Hub power draw is a constant and is no longer written to the circuit every frame.
 
+Travelling between Personnel Teleporters froze the game for around two seconds. The hub asked for its map and compass art on every request, and the map asks throughout a journey, so the load landed while the destination was streaming in and the engine stopped the game thread until all four hundred packages in flight had finished. The same shape was in the unpowered signal material on every building, resolved the first time one came into view. All of them are now resolved when the building is constructed.
+
 Sign icon search matched only the authored icon name, which most icons do not have, and so found almost nothing; it now also matches the item and texture names. The icon grid no longer pages: only two of its rows fit on screen, so it scrolls instead, and each icon loads as it comes into view.
 
 ## 0.5.11
