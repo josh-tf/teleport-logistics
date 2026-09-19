@@ -1,4 +1,5 @@
 #include "TeleportLogisticsWidget.h"
+#include "TeleportLogisticsAsset.h"
 #include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
 #include "TeleportLogisticsBuilding.h"
@@ -210,7 +211,7 @@ TSharedRef<SWidget> UTeleportLogisticsWidget::RebuildWidget()
 void UTeleportLogisticsWidget::LoadPresentation()
 {
     auto LoadBrush = [](FSlateBrush &Brush, const TCHAR *Path, float Margin) {
-        if (auto *Texture = LoadObject<UTexture2D>(nullptr, Path))
+        if (auto *Texture = TeleportLogisticsAsset<UTexture2D>(Path))
         {
             Brush.SetResourceObject(Texture);
             Brush.ImageSize = FVector2D(Texture->GetSizeX(), Texture->GetSizeY());

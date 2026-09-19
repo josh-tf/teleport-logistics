@@ -1,4 +1,5 @@
 #include "TeleportLogisticsTravel.h"
+#include "TeleportLogisticsAsset.h"
 #include "TeleportLogisticsLog.h"
 #include "FGPowerConnectionComponent.h"
 #include "FGIconDatabaseSubsystem.h"
@@ -62,8 +63,8 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
         SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("TravelRoot")));
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MainMesh"));
     Mesh->SetupAttachment(RootComponent);
-    Mesh->SetStaticMesh(LoadObject<UStaticMesh>(
-        nullptr, TEXT("/TeleportLogistics/Models/SM_TeleporterTravelHub.SM_TeleporterTravelHub"), nullptr, LOAD_NoWarn));
+    Mesh->SetStaticMesh(TeleportLogisticsAsset<UStaticMesh>(
+        TEXT("/TeleportLogistics/Models/SM_TeleporterTravelHub.SM_TeleporterTravelHub")));
     Mesh->SetCollisionProfileName(TEXT("BlockAll"));
     Mesh->SetMobility(EComponentMobility::Static);
     Power = CreateDefaultSubobject<UFGPowerConnectionComponent>(TEXT("PowerConnection"));
@@ -73,13 +74,11 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
     // representation art mid-journey, exactly while the destination is streaming in,
     // and a blocking load at that moment flushes every package in flight: the log
     // showed one such flush hold a single frame for 2.3 seconds.
-    MapIcon = LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"),
-                                     nullptr, LOAD_NoWarn);
-    MapMaterial = LoadObject<UMaterialInterface>(
-        nullptr, TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"), nullptr, LOAD_NoWarn);
-    UnpoweredSignal = LoadObject<UMaterialInterface>(
-        nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"), nullptr,
-        LOAD_NoWarn);
+    MapIcon = TeleportLogisticsAsset<UTexture2D>(TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"));
+    MapMaterial = TeleportLogisticsAsset<UMaterialInterface>(
+        TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"));
+    UnpoweredSignal = TeleportLogisticsAsset<UMaterialInterface>(
+        TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
     mPortalTravelTimeOverDistance = CreateDefaultSubobject<UCurveFloat>(TEXT("TravelTime"));
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(0, 1.5f);
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(10, 3.5f);

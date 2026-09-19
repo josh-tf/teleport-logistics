@@ -1,4 +1,5 @@
 #include "TeleportLogisticsTravel.h"
+#include "TeleportLogisticsAsset.h"
 #include "FGPlayerController.h"
 #include "FGHUD.h"
 #include "UI/FGGameUI.h"
@@ -109,7 +110,7 @@ void UTeleportLogisticsTravelWidget::Start()
 TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
 {
     Source = Cast<ATeleportLogisticsTravelHub>(mInteractObject);
-    PlateTexture = LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/UI/T_TeleporterUI_Plate.T_TeleporterUI_Plate"));
+    PlateTexture = TeleportLogisticsAsset<UTexture2D>(TEXT("/TeleportLogistics/UI/T_TeleporterUI_Plate.T_TeleporterUI_Plate"));
     PlateBrush.SetResourceObject(PlateTexture);
     PlateBrush.DrawAs = ESlateBrushDrawType::Box;
     PlateBrush.Margin = FMargin(.1f);
@@ -403,8 +404,8 @@ const FSlateBrush *UTeleportLogisticsTravelWidget::IconBrush(int32 Id)
         if (DB->IsInitialized())
             Resource = DB->GetIconTextureFromIconID(Id);
     if (!Cast<UTexture2D>(Resource))
-        Resource =
-            LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/Icons/T_TeleporterTravelHub_256.T_TeleporterTravelHub_256"));
+        Resource = TeleportLogisticsAsset<UTexture2D>(
+            TEXT("/TeleportLogistics/Icons/T_TeleporterTravelHub_256.T_TeleporterTravelHub_256"));
     auto Brush = MakeShared<FSlateBrush>();
     Brush->SetResourceObject(Resource);
     auto *Texture = Cast<UTexture2D>(Resource);

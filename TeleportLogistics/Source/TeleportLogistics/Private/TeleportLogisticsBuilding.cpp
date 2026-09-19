@@ -1,4 +1,5 @@
 #include "TeleportLogisticsBuilding.h"
+#include "TeleportLogisticsAsset.h"
 #include "UObject/ConstructorHelpers.h"
 #include "TeleportLogisticsSettings.h"
 #include "TeleportLogisticsLog.h"
@@ -36,12 +37,10 @@ ATeleportLogisticsBuilding::ATeleportLogisticsBuilding()
     mAllowColoring = true;
     mAllowPatterning = false;
     mShouldApplyCustomizationData = true;
-    // Resolved here, not on the visual timer. A blocking load issued while the world
-    // is streaming flushes every package in flight, which stalls the game thread for
-    // as long as that takes; construction happens before any of that is in motion.
-    UnpoweredSignalMaterial = LoadObject<UMaterialInterface>(
-        nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"), nullptr,
-        LOAD_NoWarn);
+    // Resolved here rather than on the visual timer, and through the shared cache so
+    // that only the class default object's construction ever loads it.
+    UnpoweredSignalMaterial = TeleportLogisticsAsset<UMaterialInterface>(
+        TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
     if (!RootComponent)
         SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("TeleporterRoot")));
     Part(TEXT("MainMesh"), TEXT("/Engine/BasicShapes/Cube.Cube"), FVector(0, 0, 12), FVector(1.8, 1.8, 0.24));
@@ -52,7 +51,7 @@ void ATeleportLogisticsBuilding::Part(const TCHAR *Name, const TCHAR *Mesh, FVec
 {
     auto *Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
     Component->SetupAttachment(RootComponent);
-    Component->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, Mesh));
+    Component->SetStaticMesh(TeleportLogisticsAsset<UStaticMesh>(Mesh));
     Component->SetRelativeLocation(Position);
     Component->SetRelativeScale3D(Scale);
     Component->SetRelativeRotation(Rotation);
@@ -85,7 +84,7 @@ void ATeleportLogisticsBuilding::AddSignMount(const FVector &At)
 }
 bool ATeleportLogisticsBuilding::UseModel(const TCHAR *AssetPath)
 {
-    auto *Mesh = LoadObject<UStaticMesh>(nullptr, AssetPath, nullptr, LOAD_NoWarn);
+    auto *Mesh = TeleportLogisticsAsset<UStaticMesh>(AssetPath);
     auto *Main = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("MainMesh")));
     if (!Mesh || !Main)
         return false;
@@ -213,10 +212,9 @@ void ATeleportLogisticsEndpoint::ItemPort(bool IsInput)
     Input = IsInput;
     Medium = ETeleportLogisticsMedium::Items;
     MapIcon =
-        LoadObject<UTexture2D>(nullptr, IsInput ? TEXT("/TeleportLogistics/Icons/M_TeleporterItemInput.M_TeleporterItemInput")
+        TeleportLogisticsAsset<UTexture2D>(IsInput ? TEXT("/TeleportLogistics/Icons/M_TeleporterItemInput.M_TeleporterItemInput")
                                                 : TEXT("/TeleportLogistics/Icons/M_TeleporterItemOutput.M_TeleporterItemOutput"));
-    MapMaterial = LoadObject<UMaterialInterface>(
-        nullptr, IsInput ? TEXT("/TeleportLogistics/Icons/MI_TeleporterMapItemInput.MI_TeleporterMapItemInput")
+    MapMaterial = TeleportLogisticsAsset<UMaterialInterface>(IsInput ? TEXT("/TeleportLogistics/Icons/MI_TeleporterMapItemInput.MI_TeleporterMapItemInput")
                          : TEXT("/TeleportLogistics/Icons/MI_TeleporterMapItemOutput.MI_TeleporterMapItemOutput"));
     Belt = CreateDefaultSubobject<UFGFactoryConnectionComponent>(TEXT("ConveyorAny0"));
     Belt->SetupAttachment(RootComponent);
@@ -297,10 +295,9 @@ void ATeleportLogisticsEndpoint::FluidPort(bool IsInput)
     Input = IsInput;
     Medium = ETeleportLogisticsMedium::Fluid;
     MapIcon =
-        LoadObject<UTexture2D>(nullptr, IsInput ? TEXT("/TeleportLogistics/Icons/M_TeleporterFluidInput.M_TeleporterFluidInput")
+        TeleportLogisticsAsset<UTexture2D>(IsInput ? TEXT("/TeleportLogistics/Icons/M_TeleporterFluidInput.M_TeleporterFluidInput")
                                                 : TEXT("/TeleportLogistics/Icons/M_TeleporterFluidOutput.M_TeleporterFluidOutput"));
-    MapMaterial = LoadObject<UMaterialInterface>(
-        nullptr, IsInput ? TEXT("/TeleportLogistics/Icons/MI_TeleporterMapFluidInput.MI_TeleporterMapFluidInput")
+    MapMaterial = TeleportLogisticsAsset<UMaterialInterface>(IsInput ? TEXT("/TeleportLogistics/Icons/MI_TeleporterMapFluidInput.MI_TeleporterMapFluidInput")
                          : TEXT("/TeleportLogistics/Icons/MI_TeleporterMapFluidOutput.MI_TeleporterMapFluidOutput"));
     Pipe = CreateDefaultSubobject<UFGPipeConnectionFactory>(TEXT("PipeConnection0"));
     Pipe->SetupAttachment(RootComponent);
@@ -566,8 +563,8 @@ bool ATeleportLogisticsEndpoint::CanDismantle_Implementation() const
 
 ATeleportLogisticsHub::ATeleportLogisticsHub()
 {
-    MapIcon = LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"));
-    MapMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"));
+    MapIcon = TeleportLogisticsAsset<UTexture2D>(TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"));
+    MapMaterial = TeleportLogisticsAsset<UMaterialInterface>(TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"));
     mDisplayName = NSLOCTEXT("TeleportLogistics", "Hub", "Teleporter Hub");
     mDescription = NSLOCTEXT("TeleportLogistics", "HubDescription",
                              "Creates a named channel and provides powered network management.");
