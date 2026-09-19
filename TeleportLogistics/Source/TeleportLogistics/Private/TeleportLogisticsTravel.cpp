@@ -414,12 +414,11 @@ void UTeleportLogisticsTravelRemote::ServerTravel_Implementation(ATeleportLogist
         ClientResult(Source, false, TEXT("Native portal travel did not start. Please report this message."));
         return;
     }
-    // Transit time comes from a curve on the portal, and the journey also waits for the
-    // destination to finish streaming. Now that a powered teleporter keeps its own
-    // surroundings resident, that wait is over at once, which left the hop
-    // instantaneous and showed that the curve was contributing nothing. Hold the
-    // traveller for the authored minimum instead, scaled the same way: 1.5s nearby
-    // rising to 3.5s at ten kilometres.
+    // A floor under the portal's own minimum, on the same scale as the curve: 1.5s
+    // nearby rising to 3.5s at ten kilometres. Measured in game the curve does apply
+    // (2.48s over 4.92 km, exactly what it should give), so this normally writes
+    // nothing; it exists because a journey was once observed to complete instantly,
+    // and the logged pair says which of the two produced the transit time.
     const double Km = FVector::Distance(Source->GetActorLocation(), Destination->GetActorLocation()) / 100000.0;
     const double Hold = FMath::Clamp(1.5 + Km * .2, 1.5, 3.5);
     UE_LOG(LogTeleportLogistics, Display,

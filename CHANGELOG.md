@@ -4,7 +4,7 @@
 
 - Buildings no longer snap themselves onto the sign areas of other machines while being placed. The rear sign pads were built on the placement hologram as well as the building, and exist for wall signs to attach to.
 - Travelling between Personnel Teleporters no longer freezes the game for around two seconds. Arriving landed in an area that was not in memory, so the engine stopped the game thread until it had streamed the destination in. A powered teleporter now keeps its own surroundings loaded, as the game's own portals do by staying linked.
-- A journey now takes 1.5 seconds nearby, rising to 3.5 across the map. The transit time had been supplied entirely by the engine stalling on streaming, so removing that stall left the hop instantaneous.
+- A journey takes 1.5 seconds nearby, rising to 3.5 across the map, with a floor under the portal's own transit time after one journey was seen to complete instantly.
 - A stutter whenever a teleporter came into view. Every building loaded its map marker and signal material as it spawned, and a blocking load while the world is streaming flushes every package in flight. All of it resolves once now, before anything is in motion.
 - Travel no longer searches every actor in the world to find a destination, and hub power draw is no longer rewritten every frame.
 - Blueprint Designer copies no longer join the live network: they were writing channels into the save, moving real cargo, and taking a real building's routes with them when the designer was cleared. Buffered cargo is no longer saved into a blueprint.
