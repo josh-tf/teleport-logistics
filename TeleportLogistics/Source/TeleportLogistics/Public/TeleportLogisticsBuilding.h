@@ -104,6 +104,8 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsBuilding : public AFGBuildableFact
   protected:
     void ApplyPowerVisual(bool HasPower);
     UPROPERTY(Transient)
+    /** This building's map marker, held so refreshes need not search the world for it. */
+    TWeakObjectPtr<class UFGActorRepresentation> Representation;
     TObjectPtr<class UMaterialInterface> PoweredSignalMaterial;
     UPROPERTY(Transient)
     TObjectPtr<class UMaterialInterface> UnpoweredSignalMaterial;
@@ -146,6 +148,10 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsEndpoint : public ATeleportLogisti
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Factory_Tick(float Dt) override;
+    /** Buffered cargo is not part of a design. Without these a blueprint saved over a
+     *  full endpoint carries its contents and mints them again at every placement. */
+    virtual void PreSerializedToBlueprint() override;
+    virtual void PostSerializedToBlueprint() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
     virtual void GetDismantleRefund_Implementation(TArray<FInventoryStack> &Refund,
                                                    bool NoBuildCost) const override;
@@ -165,6 +171,8 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsEndpoint : public ATeleportLogisti
     bool Input = true;
     UPROPERTY(SaveGame)
     TArray<FInventoryStack> Cargo;
+    /** Held across blueprint serialisation only; never saved and never replicated. */
+    TArray<FInventoryStack> StashedCargo;
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<class UFGFactoryConnectionComponent> Belt;
     UPROPERTY(VisibleAnywhere)

@@ -111,6 +111,12 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
 {
     Source = Cast<ATeleportLogisticsTravelHub>(mInteractObject);
     PlateTexture = TeleportLogisticsAsset<UTexture2D>(TEXT("/TeleportLogistics/UI/T_TeleporterUI_Plate.T_TeleporterUI_Plate"));
+    FallbackTexture = TeleportLogisticsAsset<UTexture2D>(
+        TEXT("/TeleportLogistics/Icons/T_TeleporterTravelHub_256.T_TeleporterTravelHub_256"));
+    FallbackBrush.SetResourceObject(FallbackTexture);
+    FallbackBrush.ImageSize = FallbackTexture ? FVector2D(FallbackTexture->GetSizeX(), FallbackTexture->GetSizeY())
+                                              : FVector2D(40);
+    FallbackBrush.DrawAs = ESlateBrushDrawType::Image;
     PlateBrush.SetResourceObject(PlateTexture);
     PlateBrush.DrawAs = ESlateBrushDrawType::Box;
     PlateBrush.Margin = FMargin(.1f);
@@ -153,14 +159,17 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
                          .OnTextChanged_Lambda([this](const FText &) {
                              if (PickingIcons)
                              {
-                                 ShowIcons();
+                                 // Collapse a burst of typing into one rebuild; four
+                                 // hundred cells is too much to reconstruct per key.
+                                 if (auto *World = GetWorld())
+                                     World->GetTimerManager().SetTimer(
+                                         IconSearchTimer, this, &UTeleportLogisticsTravelWidget::ShowIcons, .2f,
+                                         false);
                                  return;
                              }
                              Page = 0;
                              Selected.Invalidate();
                              LastList.Empty();
-                             if (Rows)
-                                 Rows->ClearChildren();
                          })];
     Layout->AddSlot().FillHeight(
         1)[SNew(SBorder)
@@ -177,7 +186,6 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
                                           --Page;
                                           Selected.Invalidate();
                                           LastList.Empty();
-                                          Rows->ClearChildren();
                                           return FReply::Handled();
                                       })[Caption(TEXT("Previous"))]];
     Footer->AddSlot()
@@ -204,7 +212,6 @@ TSharedRef<SWidget> UTeleportLogisticsTravelWidget::RebuildWidget()
                                           ++Page;
                                           Selected.Invalidate();
                                           LastList.Empty();
-                                          Rows->ClearChildren();
                                           return FReply::Handled();
                                       })[Caption(TEXT("Next"))]];
     Layout->AddSlot().AutoHeight().Padding(0, 12)[Footer];
@@ -312,7 +319,8 @@ void UTeleportLogisticsTravelWidget::Receive(const FTeleportLogisticsTravelDirec
             .AutoWidth()
             .VAlign(VAlign_Center)
             .Padding(0, 0, 14, 0)[SNew(SBox).WidthOverride(40).HeightOverride(40)[SNew(SScaleBox).Stretch(
-                EStretch::ScaleToFit)[SNew(SImage).Image(IconBrush(Row.IconId))]]];
+                EStretch::ScaleToFit)[SNew(SImage).Image_Lambda(
+                    [this, Id = Row.IconId] { return IconBrush(Id); })]]];
         RowBody->AddSlot().FillWidth(1)[Lines];
         Rows->AddSlot().AutoHeight().Padding(
             0, 0, 0, 6)[SNew(SButton)
@@ -357,6 +365,7 @@ FReply UTeleportLogisticsTravelWidget::Close()
     Closing = true;
     if (GetWorld())
         GetWorld()->GetTimerManager().ClearTimer(PollTimer);
+        GetWorld()->GetTimerManager().ClearTimer(IconSearchTimer);
     if (Remote)
     {
         Remote->OnDirectory.Remove(DirectoryHandle);
@@ -387,6 +396,7 @@ void UTeleportLogisticsTravelWidget::NativeDestruct()
 {
     if (GetWorld())
         GetWorld()->GetTimerManager().ClearTimer(PollTimer);
+        GetWorld()->GetTimerManager().ClearTimer(IconSearchTimer);
     if (Remote)
     {
         Remote->OnDirectory.Remove(DirectoryHandle);
@@ -399,25 +409,30 @@ const FSlateBrush *UTeleportLogisticsTravelWidget::IconBrush(int32 Id)
 {
     if (auto *Existing = IconBrushes.Find(Id))
         return Existing->Get();
-    UObject *Resource = nullptr;
+    UTexture2D *Texture = nullptr;
     if (auto *DB = AFGIconDatabaseSubsystem::Get(GetWorld()))
         if (DB->IsInitialized())
-            Resource = DB->GetIconTextureFromIconID(Id);
-    if (!Cast<UTexture2D>(Resource))
-        Resource = TeleportLogisticsAsset<UTexture2D>(
-            TEXT("/TeleportLogistics/Icons/T_TeleporterTravelHub_256.T_TeleporterTravelHub_256"));
+            Texture = Cast<UTexture2D>(DB->GetIconTextureFromIconID(Id));
+    // Deliberately uncached. The database may still be replicating when a row first
+    // paints, and caching the placeholder against the id meant the chosen icon never
+    // appeared for the rest of the window's life.
+    if (!Texture)
+        return &FallbackBrush;
     auto Brush = MakeShared<FSlateBrush>();
-    Brush->SetResourceObject(Resource);
-    auto *Texture = Cast<UTexture2D>(Resource);
-    Brush->ImageSize = Texture ? FVector2D(Texture->GetSizeX(), Texture->GetSizeY()) : FVector2D(40);
+    Brush->SetResourceObject(Texture);
+    Brush->ImageSize = FVector2D(Texture->GetSizeX(), Texture->GetSizeY());
     Brush->DrawAs = ESlateBrushDrawType::Image;
-    IconResources.AddUnique(Resource);
+    IconResources.AddUnique(Texture);
     IconBrushes.Add(Id, Brush);
     return &Brush.Get();
 }
 void UTeleportLogisticsTravelWidget::ToggleIcons()
 {
     PickingIcons = !PickingIcons;
+    if (!PickingIcons)
+        IconsSorted.Empty();
+    if (auto *World = GetWorld())
+        World->GetTimerManager().ClearTimer(IconSearchTimer);
     LastList.Empty();
     Selected.Invalidate();
     Search->SetText(FText::GetEmpty());
@@ -450,6 +465,16 @@ void UTeleportLogisticsTravelWidget::ShowIcons()
             .AutoHeight()[Caption(TEXT("Sign icons are still loading. Reopen the picker shortly."))];
         return;
     }
+    // Ordered once when the picker opens. The filter below preserves relative order, so
+    // sorting the whole library on every keystroke produced the same list at a cost that
+    // grew with the typing.
+    if (IconsSorted.IsEmpty())
+    {
+        for (const auto &I : DB->GetAllIconData())
+            if (!I.Hidden && !I.Animated)
+                IconsSorted.Add(I);
+        IconsSorted.Sort([](const FIconData &A, const FIconData &B) { return A.IconName.CompareTo(B.IconName) < 0; });
+    }
     TArray<FIconData> Icons;
     const FString Query = Search->GetText().ToString().TrimStartAndEnd();
     // IconName is only authored for some icons; the rest take their name from the
@@ -465,10 +490,9 @@ void UTeleportLogisticsTravelWidget::ShowIcons()
             return true;
         return !I.Texture.IsNull() && I.Texture.GetAssetName().Contains(Query);
     };
-    for (const auto &I : DB->GetAllIconData())
-        if (!I.Hidden && !I.Animated && (!I.SearchOnly || !Query.IsEmpty()) && Matches(I))
+    for (const auto &I : IconsSorted)
+        if ((!I.SearchOnly || !Query.IsEmpty()) && Matches(I))
             Icons.Add(I);
-    Icons.Sort([](const FIconData &A, const FIconData &B) { return A.IconName.CompareTo(B.IconName) < 0; });
     IconTotal = Icons.Num();
     // The grid already lives in a scroll box, and only two of its rows fit, so
     // paging on top of that meant scrolling a page, paging, then scrolling back.

@@ -49,6 +49,6 @@ Tier 9, 50 MW at each end. See [Personnel Teleporters](Personnel-Teleporters).
 
 ## Appearance
 
-All six support the Customizer, so paint and pattern apply as with any other building. Each carries directional indicators, an identification plate and a lit display glyph on both side panels.
+All six support the Customizer's colour swatches, patterns and paint finish, as any other building does. Each carries directional indicators, an identification plate and a lit display glyph on both side panels.
 
 Logistics endpoints and Personnel Teleporters appear in two separate map sections, so a large network stays readable.

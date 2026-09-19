@@ -22,7 +22,7 @@ The window lists every Personnel Teleporter you have built, with:
 
 - its name,
 - coordinates in metres,
-- whether it is ready, unpowered or busy,
+- whether it is ready, unpowered or in cooldown,
 - an optional icon, using the game's own sign icons.
 
 The list searches as you type. Assigning sign icons to your teleporters makes a large network much faster to read than names alone.
@@ -33,13 +33,13 @@ The list searches as you type. Assigning sign icons to your teleporters makes a 
 
 The **placement arrow** on the building marks the exit direction, so you arrive facing the way the arrow points. Aim it somewhere sensible when you build, not into a wall.
 
-A journey reserves the destination for **30 seconds**. During that window the destination shows as busy and will not accept another traveller, which prevents two pioneers arriving in the same spot.
+A journey reserves **both** teleporters for **30 seconds**. During that window each shows as *Cooldown* and cannot be used, so a second pioneer cannot arrive on top of you, and you cannot immediately travel back the way you came.
 
 ## Limits
 
 - Pioneers only. Personnel Teleporters do not move items, vehicles or creatures.
 - No power, no travel. Both ends must be powered at the moment you travel.
-- A busy or blocked destination cannot accept travel; wait for it to clear.
+- A destination in cooldown or with a blocked landing area cannot accept travel; wait for it to clear.
 
 ## On the map
 

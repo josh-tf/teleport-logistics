@@ -191,7 +191,7 @@ void UTeleportLogisticsWidget::InitializeInteraction()
         Dirty = Pending = LastActionFailed = false;
         Confirmation.Empty();
         LastListKey.Empty();
-        Page = RoutePage = 0;
+        Page = RoutePage = RequestedPage = 0;
         LastPollSent = -100;
         LastReceivedRequestId = 0;
         if (ContentRoot)
@@ -836,9 +836,12 @@ void UTeleportLogisticsWidget::Refresh()
         UE_LOG(LogTeleportLogistics, Verbose, TEXT("TeleportLogistics: interaction connection ready for %s"), *GetNameSafe(Context));
     }
     const double Now = FPlatformTime::Seconds();
-    if (Now - LastPollSent < (Data.ContextAvailable && !Pending ? 0.9 : 0.30))
+    // Paging skips the poll throttle, so a page turn answers in one round trip rather
+    // than waiting out the next tick. The server keeps its own read rate limit.
+    if (Page == RequestedPage && Now - LastPollSent < (Data.ContextAvailable && !Pending ? 0.9 : 0.30))
         return;
     LastPollSent = Now;
+    RequestedPage = Page;
     NextRequestId = Remote->AllocateSnapshotRequest();
     Remote->ServerSnapshot(Context, SelectedRoute, Page, NextRequestId);
 }
@@ -852,7 +855,10 @@ void UTeleportLogisticsWidget::Receive(const FTeleportLogisticsSnapshot &Snapsho
     LastReceivedRequestId = Snapshot.RequestId;
     const bool Completed = Pending && Snapshot.MutationRevision != Data.MutationRevision;
     Data = Snapshot;
-    Page = Data.Page;
+    // Only accept the page the newest request asked for. A snapshot still in flight when
+    // the player pages would otherwise pull the view straight back to where it was.
+    if (Snapshot.RequestId == NextRequestId && RequestedPage == Page)
+        Page = Data.Page;
     RouteIndices.Reset();
     for (int32 I = 0; I < Data.Routes.Num(); ++I)
         RouteIndices.Add(Data.Routes[I].Id, I);

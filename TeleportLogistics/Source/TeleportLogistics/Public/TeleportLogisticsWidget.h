@@ -93,6 +93,8 @@ class TELEPORTLOGISTICS_API UTeleportLogisticsWidget : public UFGInteractWidget
     bool NameTooLong() const;
     bool CanApply() const;
     int32 Page = 0;
+    /** The page the last snapshot was asked for, so a stale answer cannot move the view. */
+    int32 RequestedPage = 0;
     int32 RoutePage = 0;
     int32 VisibleRouteCount = 0;
     double LastPollSent = -100;

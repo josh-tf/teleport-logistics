@@ -34,7 +34,13 @@ The buffer step matters. Cargo sitting in a buffer belongs to the route it arriv
 
 A fluid route carries one fluid type at a time. The route adopts a type from the first fluid sent and keeps it until the route is emptied.
 
-To change what a fluid route carries, every endpoint on it must be disabled and empty, and connected pipes must be empty or already contain the new fluid. The endpoint window shows a reset action once those conditions hold, and tells you which one is not met when they do not.
+To change what a fluid route carries, every endpoint on it must be disabled and its buffer empty. Select the route in a powered Teleporter Hub and use **Reset empty fluid route**; the button stays greyed out until every endpoint qualifies. A hub can do this for its own channel and for Default routes alike.
+
+Without a hub, assign the endpoints to a new route name instead. A route created fresh carries no fluid type.
+
+A connected pipe still holding the old fluid re-pins the route the moment an endpoint is re-enabled, so drain or repurpose the pipes first.
+
+Route names persist once created, including after the last endpoint on them moves away or is dismantled while the world is being torn down. Dismantling the last endpoint of a route reclaims it. The 256-route limit counts stored routes, not only those currently carrying cargo, and a powered hub can delete any route that has no endpoints attached.
 
 ## Renaming and pausing
 

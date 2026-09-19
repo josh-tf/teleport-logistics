@@ -15,6 +15,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WorldPartitionStreamingSourceComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -38,7 +39,9 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
         NSLOCTEXT("TeleportLogistics", "PersonnelHubDesc",
                   "Travel between powered Personnel Teleporters. Open the destination directory with Use.");
     mAllowColoring = true;
-    mAllowPatterning = false;
+    // Patterns render through MI_TeleporterFactory, a child of the game's own factory base,
+    // so the Customizer applies to these the way it does to stock machines.
+    mAllowPatterning = true;
     mShouldApplyCustomizationData = true;
     mPowerConsumption = 50;
     mFactoryTickFunction.bCanEverTick = true;
@@ -79,6 +82,18 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
         TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"));
     UnpoweredSignal = TeleportLogisticsAsset<UMaterialInterface>(
         TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
+    // Half the player's own streaming radius around each powered teleporter. Arriving
+    // otherwise lands in cells that are not resident, the world partition declares
+    // streaming critical, and the engine blocks the game thread until the whole queue
+    // has drained: measured at 2.3 seconds in a single frame on a large save.
+    StreamingSource = CreateDefaultSubobject<UWorldPartitionStreamingSourceComponent>(TEXT("StreamingSource"));
+    StreamingSource->DisableStreamingSource();
+    {
+        FStreamingSourceShape Shape;
+        Shape.bUseGridLoadingRange = true;
+        Shape.LoadingRangeScale = .5f;
+        StreamingSource->Shapes.Add(Shape);
+    }
     mPortalTravelTimeOverDistance = CreateDefaultSubobject<UCurveFloat>(TEXT("TravelTime"));
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(0, 1.5f);
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(10, 3.5f);
@@ -104,7 +119,9 @@ void ATeleportLogisticsTravelHub::BeginPlay()
         if (HubName.IsEmpty())
             HubName = TEXT("Personnel Teleporter ") + HubId.ToString().Left(8);
         SetPortalName(FText::FromString(HubName));
-        Live().Add(HubId, this);
+        // A designer copy keeps its name for its own panel but is not a destination.
+        if (!IsBuildableInsideBlueprintDesigner())
+            Live().Add(HubId, this);
         FlushNetDormancy();
         ForceNetUpdate();
     }
@@ -209,6 +226,13 @@ void ATeleportLogisticsTravelHub::UpdateVisual()
                 Screen->SetScalarParameterValue(TEXT("TeleporterPower"), On ? 1 : 0);
         }
     }
+    if (StreamingSource && StreamingSource->IsStreamingSourceEnabled() != On)
+    {
+        if (On)
+            StreamingSource->EnableStreamingSource();
+        else
+            StreamingSource->DisableStreamingSource();
+    }
     HasVisualPower = true;
     LastVisualPower = On;
 }
@@ -275,7 +299,7 @@ void UTeleportLogisticsTravelRemote::ServerDirectory_Implementation(ATeleportLog
     }
     All.Sort([](const auto &A, const auto &B) {
         const int32 C = A.Name.Compare(B.Name, ESearchCase::IgnoreCase);
-        return C == 0 ? A.Id.ToString() < B.Id.ToString() : C < 0;
+        return C == 0 ? A.Id < B.Id : C < 0;
     });
     D.Total = All.Num();
     D.Page = FMath::Min(Page, FMath::Max(0, (D.Total - 1) / 32));
@@ -427,7 +451,7 @@ void UTeleportLogisticsTravelRemote::ServerSetIcon_Implementation(ATeleportLogis
         auto *DB = AFGIconDatabaseSubsystem::Get(Source->GetWorld());
         FIconData Icon;
         if (!DB || !DB->IsInitialized() || !DB->GetIconDataForIconID(IconId, Icon) || Icon.Hidden ||
-            Icon.Animated || !Cast<UTexture2D>(Icon.Texture.LoadSynchronous()))
+            Icon.Animated || Icon.Texture.IsNull())
         {
             ClientResult(Source, false, TEXT("This icon is unavailable. Choose another sign icon."));
             return;

@@ -351,11 +351,16 @@ def vendor_part(source_name, object_name, location, rotation=(0, 0, 0)):
     return obj
 
 
-def screen_face(name, location, width, height, tile, rotation=(math.pi / 2, 0, 0)):
-    """One authored face: square icon tile, upright, with no tiled bevel UVs."""
+def screen_face(name, location, width, height, tile, rotation=(math.pi / 2, 0, 0), spin=0):
+    """One authored face: square icon tile, upright, with no tiled bevel UVs.
+
+    The quad is squared off the smaller side. The atlas cells are square, so a
+    rectangular quad stretched every glyph on it by the face's aspect ratio; the
+    housing and bezel keep their authored rectangle, so no silhouette changes."""
+    side = min(width, height)
     mesh = bpy.data.meshes.new(name)
-    mesh.from_pydata([(-width/2, -height/2, 0), (width/2, -height/2, 0),
-                     (width/2, height/2, 0), (-width/2, height/2, 0)], [], [(0, 1, 2, 3)])
+    mesh.from_pydata([(-side/2, -side/2, 0), (side/2, -side/2, 0),
+                     (side/2, side/2, 0), (-side/2, side/2, 0)], [], [(0, 1, 2, 3)])
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
@@ -365,7 +370,12 @@ def screen_face(name, location, width, height, tile, rotation=(math.pi / 2, 0, 0
     col, row = tile % 4, tile // 4
     u0, u1 = (col + .015) / 4, (col + .985) / 4
     v0, v1 = 1 - (row + .985) / 2, 1 - (row + .015) / 2
-    for loop, point in zip(uv.data, ((u0,v0),(u1,v0),(u1,v1),(u0,v1))):
+    corners = [(u0, v0), (u1, v0), (u1, v1), (u0, v1)]
+    # A sloped desk cannot carry the glyph's up axis to world +Z by face rotation
+    # alone, so the art turns a quarter on the quad instead.
+    if spin:
+        corners = corners[-spin:] + corners[:-spin]
+    for loop, point in zip(uv.data, corners):
         loop.uv = point
     obj["teleport_logistics_authored_uv"] = True
     return register(obj, "screen")
@@ -434,9 +444,13 @@ def common_base(prefix, length=340, width=280):
     # Shared flat hazard decal instead of a row of raised coloured boxes.
     stripe=detail_plane(prefix+"_hazard",(-10+length/2+.1,0,23),width-90,12,5,
                         (math.pi/2,0,math.pi/2))
+    # Sample a V band proportional to the plate, so the texels stay square and every
+    # building renders the authored stripe angle. A fixed band flattened the diagonals
+    # out on the two widest plates. The band stays inside the atlas stripe run at 88..188.
+    band = 12*512/(width-90)
     for loop in stripe.data.uv_layers.active.data:
         local=(.5-loop.uv.y)*2
-        loop.uv.y=1-(1+(88+local*100)/512)/2
+        loop.uv.y=1-(1+(88+local*band)/512)/2
 
 
 def sign_mount(prefix, x, y, z, width=120, height=48, anchor_x=None):
@@ -751,7 +765,8 @@ def sloped_screen(prefix, location, width, depth, accent, angle, tile=4):
     centre = Vector(location)
     normal = Vector((math.sin(math.radians(angle)), 0, math.cos(math.radians(angle))))
     housing = box(prefix+"_housing", centre, (width+10,depth+10,7),"frame",2,rotation)
-    screen_face(prefix+"_glass", centre+normal*3.6,width,depth,tile,rotation)
+    # The desk slopes, so no face rotation carries the glyph's up axis to world +Z.
+    screen_face(prefix+"_glass", centre+normal*3.6,width,depth,tile,rotation,spin=1)
     return housing
 
 
@@ -957,12 +972,16 @@ def travel_hub():
             box(f"Travel_floor_marker_{side}_{x}",(x,side*80,27),(80,5,2),"paint_primary",.4)
     box("Travel_crown",(0,0,416),(100,450,28),"frame",4)
     box("Travel_crown_trim",(54,0,416),(8,360,14),"paint_primary",2)
-    box("Travel_console_stand",(170,-205,90),(90,86,130),"frame",4)
-    box("Travel_console_armour",(170,-250,90),(72,5,86),"paint_primary",2)
-    screen_panel("Travel_console",(170,-252,90),70,55,tile=4)
-    for x in (131,209):
-        box(f"Travel_label_bracket_{x}",(x,-251,170),(4,12,42),"steel",.6)
-    identification_plate("Travel_label",(170,-256,185),100,"PERSONNEL TELEPORTER")
+    # Mirrored, so the build-menu capture and the far side both show a console rather
+    # than the blank back of the building. The +Y copy sits on the base deck and clears
+    # the pillars and crown, and sign(y) gives each the correct outward facing.
+    for side in (-1, 1):
+        box(f"Travel_console_stand_{side}",(170,side*205,90),(90,86,130),"frame",4)
+        box(f"Travel_console_armour_{side}",(170,side*250,90),(72,5,86),"paint_primary",2)
+        screen_panel(f"Travel_console_{side}",(170,side*252,90),70,55,tile=4)
+        for x in (131,209):
+            box(f"Travel_label_bracket_{side}_{x}",(x,side*251,170),(4,12,42),"steel",.6)
+        identification_plate(f"Travel_label_{side}",(170,side*256,185),100,"PERSONNEL TELEPORTER")
     box("Travel_power_unit",(-180,-220,115),(85,74,180),"frame",4)
     cylinder("Travel_mast",(-180,-220,248),7,110,"steel",vertices=16)
     cylinder("Travel_power_cap",(-180,-220,310),14,16,"shell",vertices=16)

@@ -65,7 +65,14 @@ foreach ($model in @("ItemInput", "ItemOutput", "FluidInput", "FluidOutput", "Hu
         throw "Expected imported map marker is missing: M_Teleporter$model"
     }
 }
-foreach ($icon in @("T_TeleporterCategory_128", "T_TeleporterMilestone_256", "T_TeleporterMilestone_512")) {
+# The Personnel Teleporter is not in the model loop above: it deliberately has no map
+# marker of its own name, so that loop would demand an asset that by design does not exist.
+if (!(Test-Path (Join-Path $teleportLogisticsDestination "Content/Models/SM_TeleporterTravelHub.uasset"))) {
+    throw "Expected imported mesh is missing: SM_TeleporterTravelHub"
+}
+foreach ($icon in @("T_TeleporterCategory_128", "T_TeleporterMilestone_256", "T_TeleporterMilestone_512",
+                    "T_TeleporterTravelHub_256", "T_TeleporterTravelHub_512",
+                    "T_TeleporterPersonnelMilestone_256", "T_TeleporterPersonnelMilestone_512")) {
     if (!(Test-Path (Join-Path $teleportLogisticsDestination "Content/Icons/$icon.uasset"))) {
         throw "Expected UI icon is missing: $icon"
     }

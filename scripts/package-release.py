@@ -82,10 +82,42 @@ def main() -> None:
     parser.add_argument(
         "--server", type=Path, default=archive_dir / "TeleportLogistics-WindowsServer.zip"
     )
+    parser.add_argument(
+        "--allow-stale",
+        action="store_true",
+        help="package archives older than the plugin sources (an editor-only or partial rebuild)",
+    )
     args = parser.parse_args()
 
     manifest = json.loads((ROOT / "TeleportLogistics/TeleportLogistics.uplugin").read_text())
     version = manifest["SemVersion"]
+
+    # ficsit.app rejects an upload whose integer Version is not the SemVer major, and
+    # whose VersionName disagrees with SemVersion. Checked here as well as in the test
+    # suite, because this is the path a release actually goes through.
+    if manifest["Version"] != int(version.split(".")[0]):
+        raise SystemExit(
+            f'Version {manifest["Version"]} must equal the SemVersion major of {version}'
+        )
+    if manifest["VersionName"] != version:
+        raise SystemExit(f'VersionName {manifest["VersionName"]} does not match SemVersion {version}')
+
+    # Every other check here proves an archive is internally consistent, not that it came
+    # from the build just run. Alpakit replaces only the platform zip it writes, so a
+    # partial or editor-only run leaves the other platform's zip behind, and at an
+    # unchanged version nothing downstream can tell.
+    ignored = {"Binaries", "Intermediate", "Saved", "__pycache__"}
+    newest = max(
+        path.stat().st_mtime
+        for path in (ROOT / "TeleportLogistics").rglob("*")
+        if path.is_file() and not ignored.intersection(path.parts)
+    )
+    for source in (args.client, args.server):
+        if source.stat().st_mtime < newest and not args.allow_stale:
+            raise SystemExit(
+                f"{source} predates the plugin sources it packages; rebuild it, "
+                f"or pass --allow-stale if you know the archive is current."
+            )
     required_client = (
         "TeleportLogistics.uplugin",
         "Resources/SFUIKIT-NOTICE.md",

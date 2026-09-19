@@ -35,7 +35,9 @@ ATeleportLogisticsBuilding::ATeleportLogisticsBuilding()
     // TeleportLogistics's primary/secondary material slots read FactoryGame's native
     // customization primitive data, including paint-finish roughness/metallic.
     mAllowColoring = true;
-    mAllowPatterning = false;
+    // Patterns render through MI_TeleporterFactory, a child of the game's own factory base,
+    // so the Customizer applies to these the way it does to stock machines.
+    mAllowPatterning = true;
     mShouldApplyCustomizationData = true;
     // Resolved here rather than on the visual timer, and through the shared cache so
     // that only the class default object's construction ever loads it.
@@ -100,7 +102,11 @@ void ATeleportLogisticsBuilding::BeginPlay()
     // update that does this itself does not end up with the points twice.
     if (mAttachmentPoints.IsEmpty())
         CreateAttachmentPointsFromComponents(mAttachmentPoints, this);
-    if (HasAuthority())
+    // A building inside a Blueprint Designer is a template, not a live machine. Letting
+    // one register meant designer contents wrote channels into the save, moved real
+    // cargo, and on clearing the designer unregistered the identity they were copied
+    // from, taking the real building's channel and routes with them.
+    if (HasAuthority() && !IsBuildableInsideBlueprintDesigner())
     {
         if (!TeleporterId.IsValid())
             TeleporterId = FGuid::NewGuid();
@@ -141,22 +147,34 @@ bool ATeleportLogisticsBuilding::AddAsRepresentation()
 {
     if (!HasAuthority())
         return false;
+    // Held rather than looked up. Both of the manager's by-actor calls walk every
+    // representation in the world, so refreshing the map cost a pass over the whole
+    // world's markers for each of our buildings, twice.
+    if (Representation.IsValid())
+        return true;
     if (auto *Manager = AFGActorRepresentationManager::Get(GetWorld()))
-        return Manager->FindActorRepresentation(this) != nullptr ||
-               Manager->CreateAndAddNewRepresentation(this, false,
-                                                      UTeleportLogisticsActorRepresentation::StaticClass()) != nullptr;
+    {
+        auto *Rep = Manager->FindActorRepresentation(this);
+        if (!Rep)
+            Rep = Manager->CreateAndAddNewRepresentation(this, false,
+                                                         UTeleportLogisticsActorRepresentation::StaticClass());
+        Representation = Rep;
+        return Rep != nullptr;
+    }
     return false;
 }
 bool ATeleportLogisticsBuilding::UpdateRepresentation()
 {
     if (!AddAsRepresentation())
         return false;
-    return AFGActorRepresentationManager::Get(GetWorld())->UpdateRepresentationOfActor(this);
+    return AFGActorRepresentationManager::Get(GetWorld())->UpdateRepresentation(Representation.Get());
 }
 bool ATeleportLogisticsBuilding::RemoveAsRepresentation()
 {
     if (!HasAuthority())
         return false;
+    // Cleared first: without it a later add would update a marker that no longer exists.
+    Representation.Reset();
     if (auto *Manager = AFGActorRepresentationManager::Get(GetWorld()))
         return Manager->RemoveRepresentationOfActor(this);
     return false;
@@ -552,6 +570,20 @@ void ATeleportLogisticsEndpoint::GetDismantleRefund_Implementation(TArray<FInven
     if (Medium == ETeleportLogisticsMedium::Items)
         Refund.Append(Cargo);
 }
+void ATeleportLogisticsEndpoint::PreSerializedToBlueprint()
+{
+    Super::PreSerializedToBlueprint();
+    FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
+    StashedCargo = MoveTemp(Cargo);
+    Cargo.Reset();
+}
+void ATeleportLogisticsEndpoint::PostSerializedToBlueprint()
+{
+    Super::PostSerializedToBlueprint();
+    FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
+    Cargo = MoveTemp(StashedCargo);
+    StashedCargo.Reset();
+}
 bool ATeleportLogisticsEndpoint::CanDismantle_Implementation() const
 {
     FScopeLock Lock(&ATeleportLogisticsSubsystem::Mutex);
@@ -619,8 +651,12 @@ void ATeleportLogisticsHub::Factory_Tick(float)
 {
     // Factory ticks run on worker threads. Keep all material/scene access in
     // RefreshPowerVisual, which is driven by the game-thread timer manager.
-    if (HasAuthority() && GetPowerInfo())
-        GetPowerInfo()->SetTargetConsumption(5);
+    // Only on change. The draw is a constant, so writing it every tick touches the power
+    // circuit for a value that never moves. The write stays rather than going away: the
+    // base class may still push a different target on its own events.
+    if (auto *Info = GetPowerInfo();
+        HasAuthority() && Info && !FMath::IsNearlyEqual(Info->GetTargetConsumption(), 5.f))
+        Info->SetTargetConsumption(5);
 }
 bool ATeleportLogisticsHub::ControlPowered() const
 {

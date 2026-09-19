@@ -22,6 +22,12 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     /** Rear pad snap target for the game's own wall signs. */
     UPROPERTY()
     TObjectPtr<class UFGAttachmentPointComponent> SignMount;
+    /** Keeps this teleporter's surroundings resident while it is powered, so arriving
+     *  does not make the engine block on streaming the destination in. The game's own
+     *  portals get this by staying linked; ours are chosen at the moment of travel. */
+    UPROPERTY()
+    TObjectPtr<class UWorldPartitionStreamingSourceComponent> StreamingSource;
+
     /** Map and compass art, resolved on first ask. */
     UPROPERTY()
     TObjectPtr<UTexture2D> MapIcon;
@@ -232,6 +238,14 @@ class TELEPORTLOGISTICS_API UTeleportLogisticsTravelWidget : public UFGInteractW
     TMap<int32, TSharedPtr<FSlateBrush>> IconBrushes;
     UPROPERTY()
     TArray<TObjectPtr<UObject>> IconResources;
+    /** Shown while the icon database has not yet produced a texture for a row. Held as a
+     *  member so the pointer stays valid and the brush is never cached against an id. */
+    FSlateBrush FallbackBrush;
+    UPROPERTY()
+    TObjectPtr<UTexture2D> FallbackTexture;
+    /** The icon library, filtered and ordered once when the picker opens. */
+    TArray<FIconData> IconsSorted;
+    FTimerHandle IconSearchTimer;
     FSlateBrush PlateBrush;
     UPROPERTY()
     TObjectPtr<UTexture2D> PlateTexture;

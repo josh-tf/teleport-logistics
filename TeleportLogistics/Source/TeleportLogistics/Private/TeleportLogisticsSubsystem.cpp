@@ -27,6 +27,9 @@ bool ATeleportLogisticsSubsystem::ValidName(const FString &Name)
 }
 void ATeleportLogisticsSubsystem::Register(ATeleportLogisticsBuilding *Building)
 {
+    // Designer templates never join the live network; see BeginPlay.
+    if (Building->IsBuildableInsideBlueprintDesigner())
+        return;
     FScopeLock Lock(&Mutex);
     if (const auto *Existing = Buildings.Find(Building->TeleporterId))
     {
@@ -64,6 +67,9 @@ void ATeleportLogisticsSubsystem::Register(ATeleportLogisticsBuilding *Building)
 }
 void ATeleportLogisticsSubsystem::Unregister(ATeleportLogisticsBuilding *Building, bool Dismantled)
 {
+    // Nor may one unregister the real building whose identity it was copied from.
+    if (Building->IsBuildableInsideBlueprintDesigner())
+        return;
     FScopeLock Lock(&Mutex);
     Buildings.Remove(Building->TeleporterId);
     // Keep saved channel records during world teardown. Only dismantling removes them.
@@ -71,6 +77,25 @@ void ATeleportLogisticsSubsystem::Unregister(ATeleportLogisticsBuilding *Buildin
     {
         Routes.RemoveAll([&](const auto &R) { return R.Channel == Building->TeleporterId; });
         Channels.RemoveAll([&](const auto &C) { return C.Id == Building->TeleporterId; });
+    }
+    // A route outlives its last endpoint otherwise, and only a powered hub can delete one,
+    // so a hubless network dismantling and rebuilding endpoints walked towards the 256
+    // route ceiling with nothing to show for it. Same rule as the hub branch above: world
+    // teardown keeps the record, dismantling reclaims it.
+    if (const auto *E = Cast<ATeleportLogisticsEndpoint>(Building);
+        E && E->RouteId.IsValid() && (Dismantled || Building->GetIsDismantled()))
+    {
+        // Buildings.Remove has already run, so this cannot see the departing endpoint.
+        bool Referenced = false;
+        for (const auto &Pair : Buildings)
+            if (const auto *Other = Cast<ATeleportLogisticsEndpoint>(Pair.Value.Get());
+                Other && Other->DirectoryActive() && Other->RouteId == E->RouteId)
+            {
+                Referenced = true;
+                break;
+            }
+        if (!Referenced)
+            Routes.RemoveAll([&](const auto &R) { return R.Id == E->RouteId; });
     }
     Dirty = true;
     MapDirty = true;
@@ -104,7 +129,7 @@ void ATeleportLogisticsSubsystem::Reindex()
     {
         // Stable registration order is not guaranteed across save loads.
         auto Sort = [](const auto &A, const auto &B) {
-            return A->TeleporterId.ToString() < B->TeleporterId.ToString();
+            return A->TeleporterId < B->TeleporterId;
         };
         Pair.Value.Inputs.Sort(Sort);
         Pair.Value.Outputs.Sort(Sort);
@@ -413,33 +438,38 @@ FTeleportLogisticsSnapshot ATeleportLogisticsSubsystem::Snapshot(FGuid Route, in
     FTeleportLogisticsChannel Default;
     Default.Name = TEXT("Default");
     S.Channels.Insert(Default, 0);
+    // Only a chosen route's endpoints are ever shown, and only a hub window shows them.
+    // Building the whole directory regardless meant every endpoint panel paid for a pass
+    // over every endpoint on the map, a linear channel search and a route-path string
+    // each, and a sort that allocated two strings per comparison, all of it discarded by
+    // the caller.
     TArray<FTeleportLogisticsEndpointView> All;
-    for (const auto &Pair : Buildings)
-        if (auto *E = Cast<ATeleportLogisticsEndpoint>(Pair.Value.Get()); E && E->DirectoryActive())
-        {
-            if (Route.IsValid() && E->RouteId != Route)
-                continue;
-            FTeleportLogisticsEndpointView V;
-            V.Id = E->TeleporterId;
-            V.Route = E->RouteId;
-            if (const int32 *RouteIndex = RouteIndices.Find(E->RouteId))
+    if (Route.IsValid())
+        for (const auto &Pair : Buildings)
+            if (auto *E = Cast<ATeleportLogisticsEndpoint>(Pair.Value.Get());
+                E && E->DirectoryActive() && E->RouteId == Route)
             {
-                const auto &EndpointRoute = S.Routes[*RouteIndex];
-                const auto *Channel = Channels.FindByPredicate(
-                    [&](const auto &Candidate) { return Candidate.Id == EndpointRoute.Channel; });
-                V.RoutePath = (Channel ? Channel->Name : TEXT("Default")) + TEXT(" / ") + EndpointRoute.Name;
+                FTeleportLogisticsEndpointView V;
+                V.Id = E->TeleporterId;
+                V.Route = E->RouteId;
+                if (const int32 *RouteIndex = RouteIndices.Find(E->RouteId))
+                {
+                    const auto &EndpointRoute = S.Routes[*RouteIndex];
+                    const auto *Channel = Channels.FindByPredicate(
+                        [&](const auto &Candidate) { return Candidate.Id == EndpointRoute.Channel; });
+                    V.RoutePath = (Channel ? Channel->Name : TEXT("Default")) + TEXT(" / ") + EndpointRoute.Name;
+                }
+                else
+                    V.RoutePath = TEXT("Unassigned");
+                V.Name = E->Label;
+                V.Location = E->GetActorLocation();
+                V.Input = E->Input;
+                V.Medium = E->Medium;
+                V.Enabled = E->Enabled;
+                V.Buffered = E->Buffered();
+                All.Add(V);
             }
-            else
-                V.RoutePath = TEXT("Unassigned");
-            V.Name = E->Label;
-            V.Location = E->GetActorLocation();
-            V.Input = E->Input;
-            V.Medium = E->Medium;
-            V.Enabled = E->Enabled;
-            V.Buffered = E->Buffered();
-            All.Add(V);
-        }
-    All.Sort([](const auto &A, const auto &B) { return A.Id.ToString() < B.Id.ToString(); });
+    All.Sort([](const auto &A, const auto &B) { return A.Id < B.Id; });
     S.TotalEndpoints = All.Num();
     S.Page = FMath::Clamp(Page, 0, FMath::Max(0, (All.Num() - 1) / 64));
     for (int32 I = S.Page * 64; I < FMath::Min(All.Num(), (S.Page + 1) * 64); ++I)

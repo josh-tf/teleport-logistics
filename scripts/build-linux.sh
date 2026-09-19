@@ -68,6 +68,14 @@ done
 [[ -f "$destination/Content/Icons/T_TeleporterCategory_128.uasset" ]] || { echo "Missing category icon" >&2; exit 1; }
 [[ -f "$destination/Content/Icons/T_TeleporterMilestone_256.uasset" ]] || { echo "Missing small milestone icon" >&2; exit 1; }
 [[ -f "$destination/Content/Icons/T_TeleporterMilestone_512.uasset" ]] || { echo "Missing big milestone icon" >&2; exit 1; }
+# The Personnel Teleporter is not in the loop above: it deliberately has no map marker
+# of its own name, so the loop's M_Teleporter<model> check would demand an asset that by
+# design does not exist.
+[[ -f "$destination/Content/Models/SM_TeleporterTravelHub.uasset" ]] || { echo "Missing imported personnel mesh" >&2; exit 1; }
+for icon in T_TeleporterTravelHub_256 T_TeleporterTravelHub_512 \
+            T_TeleporterPersonnelMilestone_256 T_TeleporterPersonnelMilestone_512; do
+    [[ -f "$destination/Content/Icons/$icon.uasset" ]] || { echo "Missing personnel icon: $icon" >&2; exit 1; }
+done
 [[ -f "$destination/Content/Models/M_TeleporterScreen.uasset" ]] || { echo "Missing generated screen material" >&2; exit 1; }
 [[ -f "$destination/Content/Textures/T_TeleporterScreen_Grid.uasset" ]] || { echo "Missing generated screen texture" >&2; exit 1; }
 # Retain the successfully imported packages in the source tree used by source

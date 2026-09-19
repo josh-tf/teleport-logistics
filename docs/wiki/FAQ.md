@@ -24,7 +24,7 @@ No. The buffers are 64 items or 50 m³ and exist to smooth belt timing. Nothing 
 
 ## Can I change what a fluid route carries?
 
-Yes, but the route must be empty. Every endpoint on it must be disabled and drained, and connected pipes must be empty or already contain the new fluid. The endpoint window tells you which condition is not yet met.
+Yes, but the route must be empty. Every endpoint on it must be disabled and drained, then select the route in a powered Teleporter Hub and use **Reset empty fluid route**. Without a hub, move the endpoints to a new route name, which carries no fluid type. Drain connected pipes too, or the old fluid re-pins the route as soon as an endpoint is re-enabled.
 
 ## Does flushing a fluid buffer drain my pipes?
 
@@ -40,7 +40,7 @@ No. Item and fluid endpoints have no electrical connection, so a brownout cannot
 
 ## Do I need a hub?
 
-No. The Default channel works with no hub anywhere. Build one when your network is large enough that searching a list beats walking to the building.
+No. The Default channel works with no hub anywhere. Build one when your network is large enough that searching a list beats walking to the building, or when you want to rename, pause or delete routes: a hub is the only building that can do those, so a network that churns route names will eventually want one.
 
 ## My hub lost power. Did my factory stop?
 
@@ -48,7 +48,7 @@ No. Losing hub power disables the management interface, not logistics. Routes ke
 
 ## Can Personnel Teleporters move items or vehicles?
 
-No, pioneers only. Both ends need 50 MW at the moment of travel, and a journey reserves the destination for 30 seconds, so a busy destination will not accept a second traveller.
+No, pioneers only. Both ends need 50 MW at the moment of travel, and a journey reserves both teleporters for 30 seconds, so neither end will accept another traveller until the cooldown elapses.
 
 ## Which way do I face when I arrive?
 

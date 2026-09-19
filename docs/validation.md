@@ -1,4 +1,4 @@
-# Release acceptance: TeleportLogistics 0.5.10
+# Release acceptance: TeleportLogistics 0.5.12
 
 Automated results are recorded in the release audit, which ships in the source and publication kit archives rather than in this tree. Historical reports apply only to their stated builds. Startup was confirmed after the 0.5.5 fix; reward and UI screenshots ship with the source archive.
 
