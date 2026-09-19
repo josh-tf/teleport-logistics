@@ -69,6 +69,17 @@ ATeleportLogisticsTravelHub::ATeleportLogisticsTravelHub()
     Power = CreateDefaultSubobject<UFGPowerConnectionComponent>(TEXT("PowerConnection"));
     Power->SetupAttachment(RootComponent);
     Power->SetRelativeLocation(FVector(-180, 220, 310));
+    // All three resolved here rather than on demand. The map and compass ask for the
+    // representation art mid-journey, exactly while the destination is streaming in,
+    // and a blocking load at that moment flushes every package in flight: the log
+    // showed one such flush hold a single frame for 2.3 seconds.
+    MapIcon = LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"),
+                                     nullptr, LOAD_NoWarn);
+    MapMaterial = LoadObject<UMaterialInterface>(
+        nullptr, TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"), nullptr, LOAD_NoWarn);
+    UnpoweredSignal = LoadObject<UMaterialInterface>(
+        nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"), nullptr,
+        LOAD_NoWarn);
     mPortalTravelTimeOverDistance = CreateDefaultSubobject<UCurveFloat>(TEXT("TravelTime"));
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(0, 1.5f);
     mPortalTravelTimeOverDistance->FloatCurve.AddKey(10, 3.5f);
@@ -159,11 +170,11 @@ void ATeleportLogisticsTravelHub::GetLifetimeReplicatedProps(TArray<FLifetimePro
 }
 UTexture2D *ATeleportLogisticsTravelHub::GetActorRepresentationTexture()
 {
-    return LoadObject<UTexture2D>(nullptr, TEXT("/TeleportLogistics/Icons/M_TeleporterHub.M_TeleporterHub"));
+    return MapIcon;
 }
 UMaterialInterface *ATeleportLogisticsTravelHub::GetActorRepresentationCompassMaterial()
 {
-    return LoadObject<UMaterialInterface>(nullptr, TEXT("/TeleportLogistics/Icons/MI_TeleporterMapHub.MI_TeleporterMapHub"));
+    return MapMaterial;
 }
 void ATeleportLogisticsTravelHub::UpdateVisual()
 {
@@ -180,9 +191,6 @@ void ATeleportLogisticsTravelHub::UpdateVisual()
         if (!PoweredSignal)
             if (const UStaticMesh *Asset = Mesh->GetStaticMesh())
                 PoweredSignal = Asset->GetMaterial(Signal);
-        if (!UnpoweredSignal)
-            UnpoweredSignal = LoadObject<UMaterialInterface>(
-                nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
         if (auto *Material = On ? PoweredSignal.Get() : UnpoweredSignal.Get())
             if (Mesh->GetMaterial(Signal) != Material)
                 Mesh->SetMaterial(Signal, Material);

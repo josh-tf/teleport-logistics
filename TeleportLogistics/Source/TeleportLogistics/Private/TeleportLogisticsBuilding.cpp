@@ -36,6 +36,12 @@ ATeleportLogisticsBuilding::ATeleportLogisticsBuilding()
     mAllowColoring = true;
     mAllowPatterning = false;
     mShouldApplyCustomizationData = true;
+    // Resolved here, not on the visual timer. A blocking load issued while the world
+    // is streaming flushes every package in flight, which stalls the game thread for
+    // as long as that takes; construction happens before any of that is in motion.
+    UnpoweredSignalMaterial = LoadObject<UMaterialInterface>(
+        nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"), nullptr,
+        LOAD_NoWarn);
     if (!RootComponent)
         SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("TeleporterRoot")));
     Part(TEXT("MainMesh"), TEXT("/Engine/BasicShapes/Cube.Cube"), FVector(0, 0, 12), FVector(1.8, 1.8, 0.24));
@@ -648,9 +654,6 @@ void ATeleportLogisticsBuilding::ApplyPowerVisual(bool HasPower)
         if (!PoweredSignalMaterial)
             if (const UStaticMesh *Mesh = Main->GetStaticMesh())
                 PoweredSignalMaterial = Mesh->GetMaterial(SignalIndex);
-        if (!UnpoweredSignalMaterial)
-            UnpoweredSignalMaterial = LoadObject<UMaterialInterface>(
-                nullptr, TEXT("/TeleportLogistics/Models/M_TeleporterSignalOff.M_TeleporterSignalOff"));
         if (auto *Signal = HasPower ? PoweredSignalMaterial.Get() : UnpoweredSignalMaterial.Get())
             if (Main->GetMaterial(SignalIndex) != Signal)
                 Main->SetMaterial(SignalIndex, Signal);

@@ -22,6 +22,11 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     /** Rear pad snap target for the game's own wall signs. */
     UPROPERTY()
     TObjectPtr<class UFGAttachmentPointComponent> SignMount;
+    /** Map and compass art, resolved on first ask. */
+    UPROPERTY()
+    TObjectPtr<UTexture2D> MapIcon;
+    UPROPERTY()
+    TObjectPtr<UMaterialInterface> MapMaterial;
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     virtual void Factory_Tick(float Dt) override;
