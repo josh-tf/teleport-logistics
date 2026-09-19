@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 0,
-  "VersionName": "0.5.11",
-  "SemVersion": "0.5.11",
+  "VersionName": "0.5.12",
+  "SemVersion": "0.5.12",
   "FriendlyName": "Teleport Logistics",
   "Description": "Teleport items, fluids and Pioneers through named networks.",
   "CreatedBy": "josh-tf",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.12
+
+The buildings snapped themselves onto sign areas of other machines while being placed. Their rear sign pads were built on the placement hologram as well as the finished building, so each machine carried a sign point of its own; the pads are there for the game's wall signs to attach to, and are now created on the building only.
+
+Cross-map travel stuttered. Both the destination directory and the journey itself searched every actor in the world to find the handful of Personnel Teleporters; hubs now register themselves as they come up and both look the destination up directly. Hub power draw is a constant and is no longer written to the circuit every frame.
+
+Sign icon search matched only the authored icon name, which most icons do not have, and so found almost nothing; it now also matches the item and texture names. The icon grid no longer pages: only two of its rows fit on screen, so it scrolls instead, and each icon loads as it comes into view.
+
 ## 0.5.11
 
 Tier 9 costs and the Personnel Teleporter recipe called for Quantum Crystal, which the game has discontinued in favour of Time Crystal; its milestone tile showed the discontinued item and its replacement notice. Both now use Time Crystal at the same amounts, matching what the README and the mod page already stated.
