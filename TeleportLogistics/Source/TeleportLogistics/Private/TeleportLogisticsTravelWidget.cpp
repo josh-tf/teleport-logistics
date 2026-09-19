@@ -364,8 +364,10 @@ FReply UTeleportLogisticsTravelWidget::Close()
         return FReply::Handled();
     Closing = true;
     if (GetWorld())
+    {
         GetWorld()->GetTimerManager().ClearTimer(PollTimer);
         GetWorld()->GetTimerManager().ClearTimer(IconSearchTimer);
+    }
     if (Remote)
     {
         Remote->OnDirectory.Remove(DirectoryHandle);
@@ -395,8 +397,10 @@ FReply UTeleportLogisticsTravelWidget::NativeOnPreviewKeyDown(const FGeometry &G
 void UTeleportLogisticsTravelWidget::NativeDestruct()
 {
     if (GetWorld())
+    {
         GetWorld()->GetTimerManager().ClearTimer(PollTimer);
         GetWorld()->GetTimerManager().ClearTimer(IconSearchTimer);
+    }
     if (Remote)
     {
         Remote->OnDirectory.Remove(DirectoryHandle);
