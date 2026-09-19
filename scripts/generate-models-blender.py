@@ -976,12 +976,17 @@ def travel_hub():
     # than the blank back of the building. The +Y copy sits on the base deck and clears
     # the pillars and crown, and sign(y) gives each the correct outward facing.
     for side in (-1, 1):
-        box(f"Travel_console_stand_{side}",(170,side*205,90),(90,86,130),"frame",4)
-        box(f"Travel_console_armour_{side}",(170,side*250,90),(72,5,86),"paint_primary",2)
-        screen_panel(f"Travel_console_{side}",(170,side*252,90),70,55,tile=4)
-        for x in (131,209):
-            box(f"Travel_label_bracket_{side}_{x}",(x,side*251,170),(4,12,42),"steel",.6)
-        identification_plate(f"Travel_label_{side}",(170,side*256,185),100,"PERSONNEL TELEPORTER")
+        box(f"Travel_console_stand_{side}",(170,side*205,90),(110,86,130),"frame",4)
+        # Sized to frame the stack rather than hide behind it: the screen housing and
+        # plate span x 129..211 and z 44.5..133 and stand 3.5 proud, so a 72-wide panel
+        # over z 47..133 was buried and the accent read nowhere on the building.
+        box(f"Travel_console_armour_{side}",(170,side*250,89),(106,5,104),"paint_primary",2)
+        # Screen low on the armour with the nameplate resting straight on its housing,
+        # so the two read as one stacked unit. The plate used to stand on a pair of
+        # posts above the console, which left it floating clear of the building.
+        # Housing spans z 44.5..111.5 and the plate 111..133, against armour 47..133.
+        screen_panel(f"Travel_console_{side}",(170,side*252,78),70,55,tile=4)
+        identification_plate(f"Travel_label_{side}",(170,side*256,122),82,"PERSONNEL TELEPORTER")
     box("Travel_power_unit",(-180,-220,115),(85,74,180),"frame",4)
     cylinder("Travel_mast",(-180,-220,248),7,110,"steel",vertices=16)
     cylinder("Travel_power_cap",(-180,-220,310),14,16,"shell",vertices=16)

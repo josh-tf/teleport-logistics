@@ -15,6 +15,17 @@ def vertices(path):
             if line.startswith("v ")]
 
 
+def screen_vertices(path):
+    """Indices belonging to authored display quads, which are not panel detail."""
+    used, material = set(), None
+    for line in path.read_text().splitlines():
+        if line.startswith("usemtl "):
+            material = line.split(None, 1)[1].strip()
+        elif line.startswith("f ") and material == "screen":
+            used.update(int(token.split("/")[0]) - 1 for token in line.split()[1:])
+    return used
+
+
 def key(point):
     return tuple(round(value, 2) for value in point)
 
@@ -54,8 +65,10 @@ def require_closed_item_housing(model_name):
         assert not any(0 < x < 260 for x in intersections(0, y, 140)), (
             model_name, 'belt mouth obstructed', y)
     # Every raised vent vertex must hug the actual narrow orange panel.
-    details = [p for p in points if -90 < p[0] < 0 and 124.6 < p[1] < 145
-               and 160 < p[2] < 190]
+    # The display quad sits in this band too and is not vent geometry.
+    glass = screen_vertices(path)
+    details = [p for i, p in enumerate(points) if i not in glass
+               and -90 < p[0] < 0 and 124.6 < p[1] < 145 and 160 < p[2] < 190]
     assert details, (model_name, 'vent geometry missing')
     assert all(-57 < x < -11 and y < 125.4 for x, y, z in details), (
         model_name, 'unsupported side vent details')
