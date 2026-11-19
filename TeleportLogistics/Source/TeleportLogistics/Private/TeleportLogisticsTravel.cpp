@@ -106,7 +106,11 @@ void ATeleportLogisticsTravelHub::BeginPlay()
         SignMount->SetupAttachment(RootComponent);
     if (mAttachmentPoints.IsEmpty())
         CreateAttachmentPointsFromComponents(mAttachmentPoints, this);
-    Power->SetPowerInfo(GetPowerInfo());
+    // See ATeleportLogisticsHub::BeginPlay: bind only when needed.
+    if (auto *Info = GetPowerInfo(); Info && Power && Power->GetPowerInfo() != Info)
+        Power->SetPowerInfo(Info);
+    else if (!Info)
+        UE_LOG(LogTeleportLogistics, Warning, TEXT("Personnel Teleporter %s has no power info at BeginPlay"), *GetName());
     if (HasAuthority())
     {
         // Blueprint copies must not share a destination identity with a live hub.

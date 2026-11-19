@@ -58,6 +58,11 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsTravelHub : public AFGBuildablePor
     {
         return true;
     }
+    // See ATeleportLogisticsBuilding: 520140's default blocks interaction.
+    virtual bool ShouldBlockInteraction_Implementation(AFGCharacterPlayer *, const FHitResult &) const override
+    {
+        return false;
+    }
     virtual void UpdateUseState_Implementation(AFGCharacterPlayer *, const FVector &, UPrimitiveComponent *,
                                                FUseState &) override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Out) const override;

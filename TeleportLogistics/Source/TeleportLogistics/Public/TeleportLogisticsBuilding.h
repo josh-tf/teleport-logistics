@@ -45,6 +45,12 @@ class TELEPORTLOGISTICS_API ATeleportLogisticsBuilding : public AFGBuildableFact
     {
         return true;
     }
+    // Game build 520140's default blocks interaction with these buildings, which removes
+    // the highlight and the E prompt. Never block, as the interface documents by default.
+    virtual bool ShouldBlockInteraction_Implementation(AFGCharacterPlayer *, const FHitResult &) const override
+    {
+        return false;
+    }
     virtual FText GetLookAtDecription_Implementation(AFGCharacterPlayer *Player,
                                                      const FUseState &State) const override;
     // Appended above the stock use prompt in the look-at panel.

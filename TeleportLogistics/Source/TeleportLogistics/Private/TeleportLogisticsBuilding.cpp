@@ -622,7 +622,10 @@ void ATeleportLogisticsHub::BeginPlay()
     Super::BeginPlay();
     // Saved component transforms must not restore the old socket below the roof.
     Power->SetRelativeTransform(GetDefault<ATeleportLogisticsHub>()->Power->GetRelativeTransform());
-    Power->SetPowerInfo(GetPowerInfo());
+    // The base class usually binds the connection already; rebinding is redundant and a
+    // missing power info must not be passed on.
+    if (auto *Info = GetPowerInfo(); Info && Power->GetPowerInfo() != Info)
+        Power->SetPowerInfo(Info);
     // Wires serialize their own endpoints; moving the component alone leaves
     // existing saves and replicated clients drawing the old floating cable.
     GetWorldTimerManager().SetTimer(WireAnchorTimer, this, &ATeleportLogisticsHub::RefreshWireAnchors, 1.0f, true);
